@@ -1,0 +1,10 @@
+#!/bin/bash
+#PBS -l nodes=pbs001:ppn=4+pbs002:ppn=4+pbs003:ppn=4+pbs004:ppn=4+pbs005:ppn=4+pbs006:ppn=4+pbs007:ppn=4+pbs008:ppn=4+pbs009:ppn=4+pbs010:ppn=4+pbs011:ppn=4+pbs012:ppn=4
+
+cd /home/fichtner/SES3D_4.0/MAIN
+. /usr/local/etc/pathscale.sh
+
+mpirun -n 48 ./ses3d.exe
+
+
+

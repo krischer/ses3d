@@ -1,0 +1,1 @@
+mpif90 -O3 -w ses3d_modules.f90 ses3d_miscellaneous.f90 ses3d_input.f90 ses3d_init.f90 ses3d_evolution.f90 ses3d_grad.f90 ses3d_main.f90 ses3d_output.f90 -o ../MAIN/ses3d.exe
