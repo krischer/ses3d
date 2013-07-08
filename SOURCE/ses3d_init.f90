@@ -19,13 +19,13 @@ include 'mpif.h'
 
 	integer :: i, j, k, l, m, n, in, jn, kn, idx
 
-        real :: delta_x, delta_y, delta_z, alpha
-        real :: tol
+    real :: delta_x, delta_y, delta_z, alpha
+	real :: tol
 	
-        !=====================================================================
+	!=====================================================================
 
-        ispml=1.0
-        tol=pi/(180*100000)                !- receiver location tolerance
+    ispml=1.0
+    tol=pi/(180*100000)                !- receiver location tolerance
     
 	!======================================================================
 	
@@ -40,11 +40,11 @@ include 'mpif.h'
 	write(99,*)'begin init '
 	write(99,*)'------------------------------------------------------------'
   
-        !======================================================================
-        ! initialise elastic parameters, memory variables and Frechet derivatives
-        !======================================================================
+    !======================================================================
+    ! initialise elastic parameters, memory variables and Frechet derivatives
+    !======================================================================
 
-        kappa=lambda+2*mu/3
+    kappa=lambda+2*mu/3
 	cs=sqrt(mu*rhoinv)
 	cp=sqrt((lambda+2*mu)*rhoinv)
 	

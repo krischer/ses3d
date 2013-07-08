@@ -12,19 +12,19 @@ include 'mpif.h'
 	! variables
 	!======================================================================
 
-    	character(len=15) :: junk, ev_id
+    character(len=15) :: junk, ev_id
     	
 	integer :: pp, dummy
-    	integer :: status(MPI_STATUS_SIZE)
-    	integer :: nx_min_loc, nx_max_loc
-    	integer :: ny_min_loc, ny_max_loc
-    	integer :: nz_min_loc, nz_max_loc
-    	integer :: ix_multi_loc, iy_multi_loc, iz_multi_loc
-    	integer :: i, k
+    integer :: status(MPI_STATUS_SIZE)
+    integer :: nx_min_loc, nx_max_loc
+    integer :: ny_min_loc, ny_max_loc
+    integer :: nz_min_loc, nz_max_loc
+    integer :: ix_multi_loc, iy_multi_loc, iz_multi_loc
+    integer :: i, k
 
-    	real :: xmin_loc, xmax_loc
-    	real :: ymin_loc, ymax_loc
-    	real :: zmin_loc, zmax_loc
+    real :: xmin_loc, xmax_loc
+    real :: ymin_loc, ymax_loc
+    real :: zmin_loc, zmax_loc
     
 	!======================================================================
 	! read box file, only process 0, and send to other processes
@@ -514,7 +514,7 @@ include 'mpif.h'
 			write(*,*) 'process 0 reading receiver locations'
 			write(99,*) '- receiver locations (colat [deg], lon [deg], depth [m] ----'
 
-			open(unit=10, file='../INPUT/recfile',status='old',action='read')
+			open(unit=10, file='../INPUT/recfile_'//ev_id(1:len_trim(ev_id)),status='old',action='read')
 		
 			read(10,*) nr_global	!number of receivers
 		
