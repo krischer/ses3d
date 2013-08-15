@@ -172,9 +172,9 @@ include 'mpif.h'
         integer, intent(in) :: idx, deg, tag
         integer :: i, j, k, il, im, in
 
-	real :: lgll, lgll_dummy
+		real :: lgll, lgll_dummy
         real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd), intent(inout) :: field
-	real, dimension(0:nx,0:ny,0:nz,0:deg,0:deg,0:deg) :: cfield
+		real, dimension(0:nx,0:ny,0:nz,0:deg,0:deg,0:deg) :: cfield
 
         character(len=*), intent(in) :: name
         character(len=10) :: dummy
@@ -190,7 +190,7 @@ include 'mpif.h'
 
         if (idx==1) then
 
-	   fn=ffd(1:len_trim(ffd))//name(1:len_trim(name))//'_'//dummy(1:len_trim(dummy))
+	   		fn=ffd(1:len_trim(ffd))//name(1:len_trim(name))//'_'//dummy(1:len_trim(dummy))
 
            open(unit=tag,file=fn,action='read',form='unformatted',position='append')
            backspace(unit=tag)
@@ -201,15 +201,19 @@ include 'mpif.h'
 
         if (deg<lpd) then
 
-           read(tag) cfield
-           backspace(unit=tag)
-           backspace(unit=tag)
+           	read(tag) cfield
+           	backspace(unit=tag)
+	   		if (idx<nt) then           
+				backspace(unit=tag)
+	   		endif
 
         else
 
-           read(tag) field
-           backspace(unit=tag)
-           backspace(unit=tag)
+           	read(tag) field
+           	backspace(unit=tag)
+	   		if (idx<nt) then
+            	backspace(unit=tag)
+	   		endif
 
         endif
 
