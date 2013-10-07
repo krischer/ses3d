@@ -361,12 +361,12 @@ include 'mpif.h'
 	call mpi_bcast(zzs, 1, mpi_real, 0, mpi_comm_world, ierr)
 	call mpi_bcast(source_type, 1, mpi_integer, 0, mpi_comm_world, ierr)
 
-        call mpi_bcast(MOM_xx, 1, mpi_real, 0, mpi_comm_world, ierr)
-        call mpi_bcast(MOM_yy, 1, mpi_real, 0, mpi_comm_world, ierr)
-        call mpi_bcast(MOM_zz, 1, mpi_real, 0, mpi_comm_world, ierr)
-        call mpi_bcast(MOM_xy, 1, mpi_real, 0, mpi_comm_world, ierr)
-        call mpi_bcast(MOM_xz, 1, mpi_real, 0, mpi_comm_world, ierr)
-        call mpi_bcast(MOM_yz, 1, mpi_real, 0, mpi_comm_world, ierr)
+    call mpi_bcast(MOM_xx, 1, mpi_real, 0, mpi_comm_world, ierr)
+    call mpi_bcast(MOM_yy, 1, mpi_real, 0, mpi_comm_world, ierr)
+    call mpi_bcast(MOM_zz, 1, mpi_real, 0, mpi_comm_world, ierr)
+    call mpi_bcast(MOM_xy, 1, mpi_real, 0, mpi_comm_world, ierr)
+    call mpi_bcast(MOM_xz, 1, mpi_real, 0, mpi_comm_world, ierr)
+    call mpi_bcast(MOM_yz, 1, mpi_real, 0, mpi_comm_world, ierr)
 	
 	call mpi_bcast(xmin_global, 1, mpi_real, 0, mpi_comm_world, ierr)
 	call mpi_bcast(xmax_global, 1, mpi_real, 0, mpi_comm_world, ierr)
