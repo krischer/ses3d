@@ -13,7 +13,7 @@ include 'mpif.h'
 	!======================================================================
 
     character(len=15) :: junk, ev_id
-    	
+
 	integer :: pp, dummy
     integer :: status(MPI_STATUS_SIZE)
     integer :: nx_min_loc, nx_max_loc
@@ -25,7 +25,7 @@ include 'mpif.h'
     real :: xmin_loc, xmax_loc
     real :: ymin_loc, ymax_loc
     real :: zmin_loc, zmax_loc
-    
+
 	!======================================================================
 	! read box file, only process 0, and send to other processes
 	!======================================================================
@@ -36,12 +36,12 @@ include 'mpif.h'
 	write(99,*) 'read boxfile ***********************************************'
 
 	if (my_rank==0) then
-		
+
 		write(*,*) '----------------------------------------'
 		write(*,*) 'begin input'
-		write(*,*) 'process 0 reading boxfile' 
+		write(*,*) 'process 0 reading boxfile'
 		open(unit=15,file='../MODELS/MODELS/boxfile',status='old',action='read')
-	
+
 		read(15,*) junk
 		read(15,*) junk
 		read(15,*) junk
@@ -56,9 +56,9 @@ include 'mpif.h'
 		read(15,*) junk
 		read(15,*) junk
 		read(15,*) junk
-		
+
 		write(99,*) '- parallelisation parameters -------------------------------'
-	
+
 		read(15,*) pp
 		write(99,*) 'total number of processors:', pp
 		read(15,*) px
@@ -67,21 +67,21 @@ include 'mpif.h'
 		write(99,*) 'number of processors in phi direction:', py
 		read(15,*) pz
 		write(99,*) 'number of processors in z direction:', pz
-		
+
 		if (pp/=p) then
-			
+
 			write(*,*) 'incorrect number of processes'
 			write(*,*) 'inconsistency in boxfile and s_mpirun'
 			write(99,*) 'ERROR: incorrect number of processes'
 			write(99,*) 'ERROR: inconsistency in boxfile and s_mpirun'
-			
+
 		endif
-		
+
 		write(*,*) 'number of processors:', pp
 		read(15,*) junk
-		
+
 		do k=1,p,1
-			
+
 			read(15,*) dummy
 			read(15,*) ix_multi_loc, iy_multi_loc, iz_multi_loc
 			read(15,*) nx_min_loc, nx_max_loc
@@ -91,24 +91,24 @@ include 'mpif.h'
 			read(15,*) ymin_loc, ymax_loc
 			read(15,*) zmin_loc, zmax_loc
 			read(15,*) junk
-			
+
 			if (k==1) then
-			
+
 				ix_multi=ix_multi_loc
 				iy_multi=iy_multi_loc
 				iz_multi=iz_multi_loc
-				
+
 				nx=nx_max_loc-nx_min_loc
 				ny=ny_max_loc-ny_min_loc
 				nz=nz_max_loc-nz_min_loc
-				
+
 				xmin=xmin_loc
 				xmax=xmax_loc
 				ymin=ymin_loc
 				ymax=ymax_loc
 				zmin=zmin_loc
 				zmax=zmax_loc
-				
+
 				write(99,*)
 				write(99,*) '- geometrical parameters ----------------------------------'
 				write(99,*)
@@ -117,7 +117,7 @@ include 'mpif.h'
 				write(99,*) 'theta_min=',xmin*180/pi,' theta_max=',xmax*180/pi
 				write(99,*) 'phi_min=',ymin*180/pi,' phi_max=',ymax*180/pi
 				write(99,*) 'z_min=',zmin,' z_max=',zmax
-				
+
 			else
 
 				call MPI_Send(ix_multi_loc, 1, MPI_INTEGER, k-1, 1, MPI_COMM_WORLD, ierr)
@@ -132,15 +132,15 @@ include 'mpif.h'
 				call MPI_Send(ymax_loc, 1, MPI_REAL, k-1, 10, MPI_COMM_WORLD, ierr)
 				call MPI_Send(zmin_loc, 1, MPI_REAL, k-1, 11, MPI_COMM_WORLD, ierr)
 				call MPI_Send(zmax_loc, 1, MPI_REAL, k-1, 12, MPI_COMM_WORLD, ierr)
-				
+
 			endif
-			
+
 		enddo
-		
+
 		close(unit=15)
-		
+
 	else
-		
+
 		call MPI_Recv(ix_multi, 1, MPI_INTEGER, 0, 1, MPI_COMM_WORLD, status, ierr)
 		call MPI_Recv(iy_multi, 1, MPI_INTEGER, 0, 2, MPI_COMM_WORLD, status, ierr)
 		call MPI_Recv(iz_multi, 1, MPI_INTEGER, 0, 3, MPI_COMM_WORLD, status, ierr)
@@ -153,28 +153,28 @@ include 'mpif.h'
 		call MPI_Recv(ymax, 1, MPI_REAL, 0, 10, MPI_COMM_WORLD, status, ierr)
 		call MPI_Recv(zmin, 1, MPI_REAL, 0, 11, MPI_COMM_WORLD, status, ierr)
 		call MPI_Recv(zmax, 1, MPI_REAL, 0, 12, MPI_COMM_WORLD, status, ierr)
-		
+
 		write(99,*) '- geometrical parameters ----------------------------------'
 		write(99,*) 'itheta_multi=',ix_multi,' iphi_multi=',iy_multi,' iz_multi=',iz_multi
 		write(99,*) 'n_theta=',nx,' n_phi=',ny,' n_z=',nz
 		write(99,*) 'theta_min=',xmin*180/pi,' theta_max=',xmax*180/pi
 		write(99,*) 'phi_min=',ymin*180/pi,' phi_max=',ymax*180/pi
 		write(99,*) 'z_min=',zmin,' z_max=',zmax
-		
+
 	endif
 
 	call mpi_bcast(p,1,mpi_integer,0,mpi_comm_world,ierr)
 	call mpi_bcast(px,1,mpi_integer,0,mpi_comm_world,ierr)
 	call mpi_bcast(py,1,mpi_integer,0,mpi_comm_world,ierr)
 	call mpi_bcast(pz,1,mpi_integer,0,mpi_comm_world,ierr)
-	
+
 	write(99,*) '- parallelisation parameters -------------------------------'
 	write(99,*) 'total number of processors:', p
 	write(99,*) 'number of processors in theta direction:', px
 	write(99,*) 'number of processors in phi direction:', py
 	write(99,*) 'number of processors in z direction:', pz
 	write(99,*) '------------------------------------------------------------'
-	
+
 	!======================================================================
 	! read adequate event, setup and relax files, only process 0
 	!======================================================================
@@ -189,7 +189,7 @@ include 'mpif.h'
 
 		write(*,*) 'process 0 reading event_', event_indices(i_events), ' file'
 		write(99,*) 'read event file **********************************************'
-		open (unit=15,file='../INPUT/event_'//ev_id(1:len_trim(ev_id)),status='old',action='read') 
+		open (unit=15,file='../INPUT/event_'//ev_id(1:len_trim(ev_id)),status='old',action='read')
 
 		!- time stepping parameters ----------------------------------
 
@@ -200,7 +200,7 @@ include 'mpif.h'
 		read(15,*)dt
 		write(99,*) 'time increment: dt=', dt
 
-		!- source parameters -----------------------------------------	
+		!- source parameters -----------------------------------------
 
 		write(99,*) '- source parameters ----------------------------------------'
 		read(15,*)junk
@@ -231,6 +231,8 @@ include 'mpif.h'
 		read(15,*)junk
 		read(15,'(A100)')ofd
 		write(99,*) 'output field directory: ', ofd
+        !- Create the directory if it does not exist.
+        call system('mkdir -p '//ofd)
 
 		!- output flags ----------------------------------------------
 
@@ -240,7 +242,7 @@ include 'mpif.h'
 		write(99,*) 'output rate: ssamp=',ssamp
 		read(15,*)output_displacement
 		write(99,*) 'output_displcement=', output_displacement
-		
+
 		close(unit=15)
 
 		!================================================================================================
@@ -249,12 +251,12 @@ include 'mpif.h'
 
 		write(*,*) 'process 0 reading setup file'
 		write(99,*) 'read setup file **********************************************'
-		open (unit=15,file='../INPUT/setup',status='old',action='read') 
+		open (unit=15,file='../INPUT/setup',status='old',action='read')
 
 		!- model geometry and dissipation -----------------
-                
+
 		write(99,*) '- model geometry, anisotropy and dissipation ---------------'
-		read(15,*)junk		
+		read(15,*)junk
 		read(15,*)xmin_global
 		write(99,*) 'global minimum theta-extension: xmin=',xmin_global
 		read(15,*)xmax_global
@@ -302,9 +304,11 @@ include 'mpif.h'
 		read(15,'(A100)') ffd
 		ffd=ffd(1:len_trim(ffd))//ev_id(1:len_trim(ev_id))//'/'
 		write(99,*) 'forward field directory: ', ffd
+        !- Create the directory if it does not exist.
+        call system('mkdir -p '//ffd)
 
 		write(99,*) '------------------------------------------------------------'
-		
+
 		close(unit=15)
 
                 xxs=xxs*pi/180
@@ -321,7 +325,7 @@ include 'mpif.h'
 
 		write(*,*) 'process 0 reading relax file'
 		write(99,*) 'read relax file **********************************************'
-		open (unit=15,file='../INPUT/relax',status='old',action='read') 
+		open (unit=15,file='../INPUT/relax',status='old',action='read')
 
 		!- relaxation times
 
@@ -344,15 +348,15 @@ include 'mpif.h'
 		sum_D_p=sum(D_p)
 
 		write(99,*) '------------------------------------------------------------'
-		
+
 		close(unit=15)
-                
+
 	endif
-	
+
 	!=====================================================================
 	! broadcast input parameters to the other processes
 	!=====================================================================
-	
+
 	call mpi_bcast(nt, 1, mpi_integer, 0, mpi_comm_world, ierr)
 	call mpi_bcast(dt, 1, mpi_real, 0, mpi_comm_world, ierr)
 
@@ -367,21 +371,21 @@ include 'mpif.h'
     call mpi_bcast(MOM_xy, 1, mpi_real, 0, mpi_comm_world, ierr)
     call mpi_bcast(MOM_xz, 1, mpi_real, 0, mpi_comm_world, ierr)
     call mpi_bcast(MOM_yz, 1, mpi_real, 0, mpi_comm_world, ierr)
-	
+
 	call mpi_bcast(xmin_global, 1, mpi_real, 0, mpi_comm_world, ierr)
 	call mpi_bcast(xmax_global, 1, mpi_real, 0, mpi_comm_world, ierr)
 	call mpi_bcast(ymin_global, 1, mpi_real, 0, mpi_comm_world, ierr)
 	call mpi_bcast(ymax_global, 1, mpi_real, 0, mpi_comm_world, ierr)
 	call mpi_bcast(zmin_global, 1, mpi_real, 0, mpi_comm_world, ierr)
 	call mpi_bcast(zmax_global, 1, mpi_real, 0, mpi_comm_world, ierr)
-	
+
 	call mpi_bcast(is_diss, 1, mpi_integer, 0, mpi_comm_world, ierr)
-	
+
 	call mpi_bcast(ofd,100,mpi_character,0,mpi_comm_world,ierr)
 
 	call mpi_bcast(ssamp, 1, mpi_integer, 0, mpi_comm_world, ierr)
 	call mpi_bcast(output_displacement, 1, mpi_integer, 0, mpi_comm_world, ierr)
-	
+
 	call mpi_bcast(adjoint_flag,1,mpi_integer,0,mpi_comm_world,ierr)
 	call mpi_bcast(samp_ad, 1, mpi_integer, 0, mpi_comm_world, ierr)
 	call mpi_bcast(ffd,100,mpi_character,0,mpi_comm_world,ierr)
@@ -400,35 +404,35 @@ include 'mpif.h'
 		if ((xmin .le. xxs) .and. (xmax .ge. xxs) .AND. &
 		    (ymin .le. yys) .and. (ymax .ge. yys) .and. &
 		    (zmin .le. zmax_global-zzs) .and. (zmax .ge. zmax_global-zzs)) then
-		
+
 			write(99,*) 'process ', my_rank, 'reading source time function'
                 	write(*,*) 'process', my_rank, 'speaking ...'
 			is_source=1.0
-		
+
 			open(unit=15,file='../INPUT/stf',status='old',action='read')
-	
+
 			do i=1, nt, 1
 				read(15,*) so(i)
 			end do
-	
+
 			close(unit=15)
-    
+
 		else
-		
+
 			write(99,*) 'source not located in this processor box'
 			is_source=0.0
-		
+
 		endif
-	
+
 		call mpi_reduce(is_source*my_rank,source_processor,1,mpi_real,mpi_sum,0,mpi_comm_world,ierr)
-	
+
 		if (my_rank==0) then
-		
+
                 	call int2str(int(source_processor),junk)
-                
+
 			write(*,*) 'process', junk, 'reading source time function'
                 	write(99,*) 'process', source_processor, 'reading source time function'
-	
+
 		endif
 
 	endif
@@ -442,24 +446,24 @@ include 'mpif.h'
 	if (my_rank==0) then
 		write(*,*) "reading structural information"
 	endif
-	
+
 	write(99,*) '------------------------------------------------------------'
 	write(99,*) 'read structural input **************************************'
 	write(99,*) '------------------------------------------------------------'
-		
+
 	if (is_diss==1) then
 		write(99,*) 'Dissipation on'
 	else
 		write(99,*) 'Dissipation off'
 	endif
-	
+
 	open(unit=15,file='../MODELS/MODELS/rhoinv'//junk(1:len_trim(junk)),status='old',action='read',form='unformatted')
 	open(unit=16,file='../MODELS/MODELS/mu'//junk(1:len_trim(junk)),status='old',action='read',form='unformatted')
-	open(unit=17,file='../MODELS/MODELS/lambda'//junk(1:len_trim(junk)),status='old',action='read',form='unformatted')				
+	open(unit=17,file='../MODELS/MODELS/lambda'//junk(1:len_trim(junk)),status='old',action='read',form='unformatted')
 	open(unit=21,file='../MODELS/MODELS/A'//junk(1:len_trim(junk)),status='old',action='read',form='unformatted')
 	open(unit=22,file='../MODELS/MODELS/B'//junk(1:len_trim(junk)),status='old',action='read',form='unformatted')
 	open(unit=23,file='../MODELS/MODELS/C'//junk(1:len_trim(junk)),status='old',action='read',form='unformatted')
-	
+
 	read(15) rhoinv(0:nx,0:ny,0:nz,0:lpd,0:lpd,0:lpd)
 	read(16) mu(0:nx,0:ny,0:nz,0:lpd,0:lpd,0:lpd)
 	read(17) lambda(0:nx,0:ny,0:nz,0:lpd,0:lpd,0:lpd)
@@ -473,7 +477,7 @@ include 'mpif.h'
 	close(unit=21)
 	close(unit=22)
 	close(unit=23)
-		
+
 	if (is_diss==1) then
 
 		open (unit=21,file='../MODELS/MODELS/Q'//junk(1:len_trim(junk)),status='old',action='read',form='unformatted')
@@ -492,17 +496,17 @@ include 'mpif.h'
 	write(99,*) 'minimum C: ',minval(C(:,:,:,:,:,:)), ' maximum C: ', maxval(C(:,:,:,:,:,:))
 
 	if (is_diss==1) then
-		
+
 	       write(99,*) 'minimum tau: ',minval(tau(:,:,:,:,:,:)), ' maximum tau: ', maxval(tau(:,:,:,:,:,:))
-		
+
 	endif
 
 	write(99,*) '------------------------------------------------------------'
-	
+
 	!======================================================================
 	! read receiver locations, process  0 only
 	!======================================================================
-	
+
 	if ((adjoint_flag==1) .or. (adjoint_flag==0)) then
 
 		call int2str(event_indices(i_events),junk)
@@ -510,17 +514,17 @@ include 'mpif.h'
 		write(99,*) 'read receiver locations ************************************'
 
 		if (my_rank==0) then
-		
+
 			write(*,*) 'process 0 reading receiver locations'
 			write(99,*) '- receiver locations (colat [deg], lon [deg], depth [m] ----'
 
 			open(unit=10, file='../INPUT/recfile_'//ev_id(1:len_trim(ev_id)),status='old',action='read')
-		
+
 			read(10,*) nr_global	!number of receivers
-		
+
 			do i=1,nr_global
 
-				read(10,*) station_name_global(i) 
+				read(10,*) station_name_global(i)
 				read(10,*) recloc_global(1,i), recloc_global(2,i), recloc_global(3,i)
 				write(99,*) station_name_global(i), recloc_global(1,i), recloc_global(2,i), recloc_global(3,i)
 
@@ -528,13 +532,13 @@ include 'mpif.h'
                         	recloc_global(2,i)=recloc_global(2,i)*pi/180
 
 			enddo
-		
+
 			close(10)
-		
+
 			write(99,*) '------------------------------------------------------------'
-		
+
 		endif
-	
+
 		call mpi_bcast(station_name_global, 12*maxnr, mpi_character, 0, mpi_comm_world, ierr)
 		call mpi_bcast(recloc_global, 3*maxnr, mpi_real, 0, mpi_comm_world, ierr)
 		call mpi_bcast(nr_global,1,mpi_integer,0,mpi_comm_world,ierr)
@@ -544,14 +548,14 @@ include 'mpif.h'
 	!=============================================================================
         ! read saving vector
         !=============================================================================
-       
+
 	if (adjoint_flag==2) then
 
 		call int2str(my_rank,junk)
 
-        	write(99,*) 'read saving vector'  
+        	write(99,*) 'read saving vector'
 
-	
+
 		open(unit=10,file=ffd(1:len_trim(ffd))//'saving_vector_'//junk(1:len_trim(junk)),action='read')
 
         	do k=1,nt
@@ -579,7 +583,7 @@ include 'mpif.h'
            		!- read adjoint source locations ------------------------------------------
 
            		open(unit=10,file='../ADJOINT/'//junk(1:len_trim(junk))//'/ad_srcfile',action='read')
-             
+
 			read(10,*) nr_adsrc_global
 
 			do k=1,nr_adsrc_global
@@ -588,7 +592,7 @@ include 'mpif.h'
 
               			ad_srcloc_global(1,k)=ad_srcloc_global(1,k)*pi/180
               			ad_srcloc_global(2,k)=ad_srcloc_global(2,k)*pi/180
-              
+
               			write(99,*) ad_srcloc_global(1,k)*180/pi, ad_srcloc_global(2,k)*180/pi, ad_srcloc_global(3,k)
               			write(*,*) ad_srcloc_global(1,k)*180/pi, ad_srcloc_global(2,k)*180/pi, ad_srcloc_global(3,k)
 
@@ -612,5 +616,5 @@ include 'mpif.h'
 
 	write(99,*) 'end input'
 	write(99,*) '------------------------------------------------------------'
-        
+
 end subroutine ses3d_input
