@@ -1,6 +1,0 @@
- ----------------------------------------
- begin input
- process 0 reading boxfile
- number of processors: 48
- process 0 reading setup file
- reading structural information
