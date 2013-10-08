@@ -18,7 +18,22 @@ include 'mpif.h'
 
 	call int2str(my_rank,mrc)
 	open(unit=99,file='logfile'//junk(1:len_trim(junk)),action='write')
-	
+
+	!======================================================================
+	! Make sure all required directories are in existance.
+	! Let's hope this works for all compilers...
+	!======================================================================
+    if (my_rank==0) then
+        !- Create the necessary directories.
+        call system('mkdir -p ../../DATA/COORDINATES')
+        call system('mkdir -p ../MODELS')
+        ! Block other processes until the directory has been created.
+        call MPI_BARRIER(MPI_COMM_WORLD,ierr)
+    else
+        ! Block other processes until the directory has been created.
+        call MPI_BARRIER(MPI_COMM_WORLD,ierr)
+    endif
+
 	!======================================================================
 	! process 0 reads input and broadcasts it to the other processes
 	!======================================================================
@@ -26,16 +41,16 @@ include 'mpif.h'
 	if (my_rank==0) then
 
 		write(*,*) 'process 0 reading setupt file'
-		
+
 		write(99,*) '----------------------------------'
 		write(99,*) '- setup file ---------------------'
 		write(99,*) '----------------------------------'
-		
-		open (UNIT=15,FILE='../../INPUT/setup',STATUS='OLD',ACTION='READ') 
+
+		open (UNIT=15,FILE='../../INPUT/setup',STATUS='OLD',ACTION='READ')
 
 		!- model geometry, anisotropy and dissipation ----------------
-                
-		read(15,*)junk		
+
+		read(15,*)junk
 		read(15,*)x_min
 		write(99,*) 'global minimum theta-extension: xmin=',x_min
 		read(15,*)x_max
@@ -78,27 +93,27 @@ include 'mpif.h'
 		write(99,*) 'number of processors in z direction:', pz
 
 		write(99,*) '----------------------------------'
-		
+
 		close(15)
-                
+
 	endif
-	
+
 	call mpi_bcast(nx,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
 	call MPI_BCAST(ny,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
 	call MPI_BCAST(nz,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-	
+
 	call MPI_BCAST(lpd,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-	
+
 	call MPI_BCAST(x_min,1,MPI_REAL,0,MPI_COMM_WORLD,ierr)
 	call MPI_BCAST(x_max,1,MPI_REAL,0,MPI_COMM_WORLD,ierr)
 	call MPI_BCAST(y_min,1,MPI_REAL,0,MPI_COMM_WORLD,ierr)
 	call MPI_BCAST(y_max,1,MPI_REAL,0,MPI_COMM_WORLD,ierr)
 	call MPI_BCAST(z_min,1,MPI_REAL,0,MPI_COMM_WORLD,ierr)
 	call MPI_BCAST(z_max,1,MPI_REAL,0,MPI_COMM_WORLD,ierr)
-	
+
 	call MPI_BCAST(model_type,1,MPI_REAL,0,MPI_COMM_WORLD,ierr)
 	call MPI_BCAST(is_diss,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
-	
+
 	call MPI_BCAST(px,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
 	call MPI_BCAST(py,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
 	call MPI_BCAST(pz,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
@@ -106,39 +121,39 @@ include 'mpif.h'
         !======================================================================
 	! determine collocation points (knots)
 	!======================================================================
-	
+
 	if (lpd==2) then
-		
+
 		knots(0)=-1.0
 		knots(1)=0.0
 		knots(2)=1.0
-		
+
 	elseif (lpd==3) then
-		
+
 		knots(0)=-1.0
 		knots(1)=-0.4472135954999579
 		knots(2)=0.4472135954999579
 		knots(3)=1.0
-		
+
 	elseif (lpd==4) then
-		
+
 		knots(0)=-1.0
 		knots(1)=-0.6546536707079772
 		knots(2)=0.0
 		knots(3)=0.6546536707079772
 		knots(4)=1.0
-		
+
 	elseif (lpd==5) then
-		
+
 		knots(0)=-1.0
 		knots(1)=-0.7650553239294647
 		knots(2)=-0.2852315164806451
 		knots(3)=0.2852315164806451
 		knots(4)=0.7650553239294647
 		knots(5)=1.0
-		
+
 	elseif (lpd==6) then
-		
+
 		knots(0)=-1.0
 		knots(1)=-0.8302238962785670
 		knots(2)=-0.4688487934707142
@@ -146,9 +161,9 @@ include 'mpif.h'
 		knots(4)=0.4688487934707142
 		knots(5)=0.8302238962785670
 		knots(6)=1.0
-		
+
 	elseif (lpd==7) then
-		
+
 		knots(0)=-1.0
 		knots(1)=-0.8717401485096066
 		knots(2)=-0.5917001814331423
@@ -157,7 +172,7 @@ include 'mpif.h'
 		knots(5)=0.5917001814331423
 		knots(6)=0.8717401485096066
 		knots(7)=1.0
-		
+
 	endif
 
 	!======================================================================
@@ -167,24 +182,24 @@ include 'mpif.h'
 	if (my_rank==0) then
 
 		write(*,*) 'writing boxfile'
-	
+
 	endif
 
 	allocate(min_index(1:px*py*pz,1:3),STAT=status)		! minimum element indeces
 	allocate(max_index(1:px*py*pz,1:3),STAT=status)		! maximum element indeces
-	
+
 	dz=(z_max-z_min)/(nz+pz)					! width of the elements in z direction
 	dy=(y_max-y_min)/(ny+py)					! width of the elements in y direction
 	dx=(x_max-x_min)/(nx+px)					! width of the elements in x direction
-	
+
 	bnx=floor(real((nx+1)/px))				! number of elements per processor in x direction
 	bny=floor(real((ny+1)/py))				! number of elements per processor in y direction
 	bnz=floor(real((nz+1)/pz))				! number of elements per processor in z direction
 
 	if (my_rank==0) then
-	
+
 		open(unit=11,file='../MODELS/boxfile',action='write')
-		
+
 		write(11,*) "- format description -"
 		write(11,*) "total number of processes"
 		write(11,*) "number of processes in x direction"
@@ -198,69 +213,69 @@ include 'mpif.h'
 		write(11,*) "physical boundaries x"
 		write(11,*) "physical boundaries y"
 		write(11,*) "phyiscal boundaries z"
-	
+
 		write(11,*) '-------------------'
 		write(11,*) px*py*pz
 		write(11,*) px
 		write(11,*) py
 		write(11,*) pz
 		write(11,*) '-------------------'
-		
+
 	endif
-	
+
 	do k=1,pz,1
 		do j=1,py,1
 			do i=1,px,1
-				
+
 				! indices (multiple and single) of the processor boxes (mi=my_rank+1)
-				mi=(k-1)*py*px+(j-1)*px+i	
-		
+				mi=(k-1)*py*px+(j-1)*px+i
+
 				if (my_rank==0) then
-				
+
 					write(11,*) mi
 					write(11,*) i,j,k
-					
+
 				endif
-				
+
 				! index boundaries of the processor boxes
 				min_index(mi,1)=(i-1)*bnx
 				min_index(mi,2)=(j-1)*bny
 				min_index(mi,3)=(k-1)*bnz
-				
+
 				if (i/=px) then
 					max_index(mi,1)=i*bnx
 				else
 					max_index(mi,1)=nx
 				endif
-				
+
 				if (j/=py) then
 					max_index(mi,2)=j*bny
 				else
 					max_index(mi,2)=ny
 				endif
-				
+
 				if (k/=pz) then
 					max_index(mi,3)=k*bnz
 				else
 					max_index(mi,3)=nz
 				endif
-				
+
 				if (my_rank==0) then
-				
+
 					write(11,*) min_index(mi,1), max_index(mi,1)
 					write(11,*) min_index(mi,2), max_index(mi,2)
 					write(11,*) min_index(mi,3), max_index(mi,3)
-				
+
 					! physical boundaries of the processor boxes
 					write(11,*) x_min+(min_index(mi,1)+i-1)*dx, x_min+(max_index(mi,1)+i)*dx
 					write(11,*) y_min+(min_index(mi,2)+j-1)*dy, y_min+(max_index(mi,2)+j)*dy
 					write(11,*) z_min+(min_index(mi,3)+k-1)*dz, z_min+(max_index(mi,3)+k)*dz
 					write(11,*) '-------------------'
-					
+
 				endif
-			
+
 				if (my_rank==(mi-1)) then
-					
+
 					nx_loc=max_index(my_rank+1,1)-min_index(my_rank+1,1)
 					ny_loc=max_index(my_rank+1,2)-min_index(my_rank+1,2)
 					nz_loc=max_index(my_rank+1,3)-min_index(my_rank+1,3)
@@ -273,17 +288,17 @@ include 'mpif.h'
 
 					z_min_loc=z_min+(min_index(my_rank+1,3)+k-1)*dz
 					z_max_loc=z_min+(max_index(my_rank+1,3)+k)*dz
-					
+
 				endif
-					
+
 			enddo
 		enddo
 	enddo
-				
+
 	if (my_rank==0) then
-	
+
 		close(unit=11)
-	
+
 	endif
 
         !======================================================================
@@ -300,7 +315,7 @@ include 'mpif.h'
         allocate(x(0:nx_loc,0:lpd))
         allocate(y(0:ny_loc,0:lpd))
         allocate(z(0:nz_loc,0:lpd))
-	
+
 	allocate(XX(0:nx_loc,0:ny_loc,0:nz_loc,0:lpd,0:lpd,0:lpd))
 	allocate(YY(0:nx_loc,0:ny_loc,0:nz_loc,0:lpd,0:lpd,0:lpd))
 	allocate(ZZ(0:nx_loc,0:ny_loc,0:nz_loc,0:lpd,0:lpd,0:lpd))
@@ -324,7 +339,7 @@ include 'mpif.h'
 			write(102,*) y(j,n)
 		enddo
 	enddo
-	
+
 	do k=0,nz_loc
 		do n=0,lpd
 			z(k,n)=z_max_loc-k*dz-0.5*(1+knots(n))*dz
@@ -332,14 +347,14 @@ include 'mpif.h'
 			write(103,*) z(k,n)
 		enddo
 	enddo
-	
+
 	close(unit=101)
 	close(unit=102)
 	close(unit=103)
 
 	XX=XX*180/pi
 	YY=YY*180/pi
- 
+
 	!======================================================================
 	! allocate memory and generate models
 	!======================================================================
@@ -355,38 +370,38 @@ include 'mpif.h'
         allocate(rho(0:nx_loc,0:ny_loc,0:nz_loc,0:lpd,0:lpd,0:lpd))
         allocate(cs(0:nx_loc,0:ny_loc,0:nz_loc,0:lpd,0:lpd,0:lpd))
         allocate(cp(0:nx_loc,0:ny_loc,0:nz_loc,0:lpd,0:lpd,0:lpd))
-        
+
 
 		!=============================================================
 		! homogeneous model
 		!=============================================================
 
 		if (model_type==1) then
-			
+
                        call homogeneous
-			
+
 		endif
-		
+
                 !=============================================================
-                ! EUROPEAN BACKGROUND MODEL	
+                ! EUROPEAN BACKGROUND MODEL
                 !=============================================================
 
                 if (model_type==4) then
 
                         call eumod_bg
-	
+
                 endif
-				
+
 		!=============================================================
 		! AK135
 		!=============================================================
-		
+
 		if (model_type==7) then
 
                     call ak135
-							
+
                 endif
-		
+
 	!======================================================================
 	! save to files
 	!======================================================================
@@ -396,7 +411,7 @@ include 'mpif.h'
 		!==============================================================
 
 		call int2str(my_rank,mrc)
-			
+
 		open(unit=11,file='../MODELS/rhoinv'//mrc(1:len_trim(mrc)),action='write',form='unformatted')
 		open(unit=12,file='../MODELS/mu'//mrc(1:len_trim(mrc)),action='write',form='unformatted')
 		open(unit=13,file='../MODELS/lambda'//mrc(1:len_trim(mrc)),action='write',form='unformatted')
@@ -407,14 +422,14 @@ include 'mpif.h'
 		if (is_diss==1) then
 			open(unit=17,file='../MODELS/Q'//mrc(1:len_trim(mrc)),action='write',form='unformatted')
 		endif
-		
+
 		!==============================================================
 		! write parameters to files, formatted or unformatted
 		!==============================================================
-			
+
 		write(11) rhoinv(:,:,:,:,:,:)
 		write(12) mu(:,:,:,:,:,:)
-		write(13) lambda(:,:,:,:,:,:)	
+		write(13) lambda(:,:,:,:,:,:)
 		write(14) A(:,:,:,:,:,:)
 		write(15) B(:,:,:,:,:,:)
 		write(16) C(:,:,:,:,:,:)
@@ -422,14 +437,14 @@ include 'mpif.h'
 		if (is_diss==1) then
 			write(17) Q(:,:,:,:,:,:)
 		endif
-				
+
 		close(unit=11)
 		close(unit=12)
 		close(unit=13)
 		close(unit=14)
 		close(unit=15)
 		close(unit=16)
-			
+
 		if (is_diss==1) then
 			close(unit=17)
 		endif
@@ -437,8 +452,8 @@ include 'mpif.h'
 	!======================================================================
 	! make a profile
 	!======================================================================
-	
-	
+
+
 	open(unit=11,file='../MODELS/prof_rhoinv'//mrc(1:len_trim(mrc)),action='write')
 	open(unit=12,file='../MODELS/prof_lambda'//mrc(1:len_trim(mrc)),action='write')
 	open(unit=13,file='../MODELS/prof_mu'//mrc(1:len_trim(mrc)),action='write')
@@ -446,13 +461,13 @@ include 'mpif.h'
 	open(unit=22,file='../MODELS/prof_b'//mrc(1:len_trim(mrc)),action='write')
 	open(unit=23,file='../MODELS/prof_c'//mrc(1:len_trim(mrc)),action='write')
 
-	if (is_diss==1) then 
+	if (is_diss==1) then
 		open(unit=24,file='../MODELS/prof_Q'//mrc(1:len_trim(mrc)),action='write')
 	endif
 
         do i=0,nz_loc
         	do k=0,lpd
-		
+
 			write(11,*) rhoinv(0,0,i,0,0,k), z(i,k)
 			write(12,*) lambda(0,0,i,0,0,k), z(i,k)
 			write(13,*) mu(0,0,i,0,0,k), z(i,k)
@@ -463,7 +478,7 @@ include 'mpif.h'
 			if (is_diss==1) then
 				write(24,*) Q(0,0,i,0,0,k), z(i,k)
 			endif
-			
+
 		enddo
 	enddo
 
@@ -481,11 +496,11 @@ include 'mpif.h'
 	!=======================================================================
 	! clean up
 	!=======================================================================
-	
+
 	deallocate(rhoinv)
 	deallocate(mu)
 	deallocate(lambda)
-	
+
 	deallocate(A)
 	deallocate(B)
 	deallocate(C)
@@ -495,18 +510,18 @@ include 'mpif.h'
         deallocate(rho)
         deallocate(cp)
         deallocate(cs)
-	
+
 	deallocate(min_index)
 	deallocate(max_index)
 
         deallocate(x)
         deallocate(y)
         deallocate(z)
-	
+
 	deallocate(XX)
 	deallocate(YY)
 	deallocate(ZZ)
-	
+
 	close(unit=99)
 
 	call MPI_Finalize(ierr)
@@ -524,40 +539,40 @@ implicit none
 
 	integer, intent(in) :: value
 	character(len=*), intent(inout) :: string
-	
+
 	character(len=10) :: c
 	integer :: k, n, new_value, is
 	real :: e
-	
-	
+
+
 	e=1e9
 	is=0
-	
+
 	if (value==0) then
 		string(1:1)='0'
 		string(2:10)=' '
 	else
-	
+
 		new_value=value
-	
+
 		do k=1,10
 			c(k:k)=char(floor(new_value/e)+48)
-		
+
 			if ((floor(new_value/e)==0) .and. (is==0)) then
 				n=k
 			else
 				is=1
 			endif
-		
+
 			!write(*,*) c
 			new_value=new_value-e*floor(new_value/e)
 			e=e/10
 			string(k:k)=' '
-		
+
 		enddo
-		
+
 		string(1:10-n)=c(n+1:10)
-		
+
 	endif
 
 	if (len(string)>10) then
