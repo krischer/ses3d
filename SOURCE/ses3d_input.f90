@@ -12,7 +12,7 @@ include 'mpif.h'
 	! variables
 	!======================================================================
 
-    character(len=15) :: junk, ev_id
+    character(len=15) :: junk
 
 	integer :: pp, dummy
     integer :: status(MPI_STATUS_SIZE)
@@ -179,17 +179,15 @@ include 'mpif.h'
 	! read adequate event, setup and relax files, only process 0
 	!======================================================================
 
-	call int2str(event_indices(i_events),ev_id)
-
 	if (my_rank==0) then
 
 		!================================================================================================
 		! read event file
 		!================================================================================================
 
-		write(*,*) 'process 0 reading event_', event_indices(i_events), ' file'
+		write(*,*) 'process 0 reading event_'//trim(event_indices(i_events))//' file'
 		write(99,*) 'read event file **********************************************'
-		open (unit=15,file='../INPUT/event_'//ev_id(1:len_trim(ev_id)),status='old',action='read')
+		open (unit=15,file='../INPUT/event_'//trim(event_indices(i_events)),status='old',action='read')
 
 		!- time stepping parameters ----------------------------------
 
@@ -302,7 +300,7 @@ include 'mpif.h'
 		read(15,*)samp_ad
 		write(99,*) 'forward field storing rate:', samp_ad
 		read(15,'(A100)') ffd
-		ffd=ffd(1:len_trim(ffd))//ev_id(1:len_trim(ev_id))//'/'
+		ffd=ffd(1:len_trim(ffd))//trim(event_indices(i_events))//'/'
 		write(99,*) 'forward field directory: ', ffd
         !- Create the directory if it does not exist.
         call system('mkdir -p '//ffd)
@@ -398,8 +396,6 @@ include 'mpif.h'
 	!=============================================================================
 
 	if ((adjoint_flag==0) .or. (adjoint_flag==1)) then
-
-		call int2str(event_indices(i_events),junk)
 
 		if ((xmin .le. xxs) .and. (xmax .ge. xxs) .AND. &
 		    (ymin .le. yys) .and. (ymax .ge. yys) .and. &
@@ -509,8 +505,6 @@ include 'mpif.h'
 
 	if ((adjoint_flag==1) .or. (adjoint_flag==0)) then
 
-		call int2str(event_indices(i_events),junk)
-
 		write(99,*) 'read receiver locations ************************************'
 
 		if (my_rank==0) then
@@ -518,7 +512,7 @@ include 'mpif.h'
 			write(*,*) 'process 0 reading receiver locations'
 			write(99,*) '- receiver locations (colat [deg], lon [deg], depth [m] ----'
 
-			open(unit=10, file='../INPUT/recfile_'//ev_id(1:len_trim(ev_id)),status='old',action='read')
+			open(unit=10, file='../INPUT/recfile_'//trim(event_indices(i_events)),status='old',action='read')
 
 			read(10,*) nr_global	!number of receivers
 
@@ -576,13 +570,11 @@ include 'mpif.h'
 
         	if (my_rank==0) then
 
-			call int2str(event_indices(i_events),junk)
-
 			write(99,*) 'read adjoint source locations *******************************'
 
            		!- read adjoint source locations ------------------------------------------
 
-           		open(unit=10,file='../ADJOINT/'//junk(1:len_trim(junk))//'/ad_srcfile',action='read')
+           		open(unit=10,file='../ADJOINT/'//trim(event_indices(i_events))//'/ad_srcfile',action='read')
 
 			read(10,*) nr_adsrc_global
 

@@ -44,7 +44,7 @@ include 'mpif.h'
 	endif
 
 	call mpi_bcast(n_events,1,mpi_integer,0,mpi_comm_world,ierr)
-	call mpi_bcast(event_indices,1000,mpi_integer,0,mpi_comm_world,ierr)
+	call mpi_bcast(event_indices,1000,mpi_character,0,mpi_comm_world,ierr)
 
 	!======================================================================
 	! open and write logfile

@@ -13,19 +13,19 @@ implicit none
 	integer, parameter :: nx_max=22		! number of elements in x direction per processor - 1
 	integer, parameter :: ny_max=27		! number of elements in y direction per processor - 1
 	integer, parameter :: nz_max=7		! number of elements in z direction per processor - 1
-	
+
 	integer, parameter :: lpd=4		! LAGRANGE polynomial degree
-	
+
 	integer, parameter :: maxnt=15000	! maximum number of time steps
 	integer, parameter :: maxnr=800         ! maximum number of receivers
         integer, parameter :: pml=2
-	
+
         integer, parameter :: nrdiss=3          ! number of relaxation mechanisms
 
 	real, parameter :: pi=3.1415926535898
 
 end module parameters
-    
+
 !==============================================================================
 ! global variables
 !==============================================================================
@@ -36,7 +36,7 @@ implicit none
 
         integer :: run_the_programme
         real :: ispml
-        
+
 	!======================================================================
 	! model dimensions
 	!======================================================================
@@ -49,19 +49,19 @@ implicit none
 	integer :: p, my_rank, ierr
 
 	integer :: n_events, i_events
-	integer, dimension(1:1000) :: event_indices
+	character (len=255), dimension(1:1000) :: event_indices
 
 	!======================================================================
 	! physical model parameters
 	!======================================================================
-	
+
 	real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: rhoinv, mu, lambda, kappa, mu_tau
 	real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: A, B, C
 	real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: tau, QQ
 	real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: cp, cs, rho
 	real, dimension(1:nrdiss) :: tau_p, D_p
 	real :: sum_D_p
-	
+
 	!======================================================================
 	! local displacement fields, strain fields, mass matrix and memory variables
 	!======================================================================
@@ -94,8 +94,8 @@ implicit none
 	!======================================================================
 	! source fields
 	!======================================================================
-	
-	real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: src_xx, src_yy, src_zz 
+
+	real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: src_xx, src_yy, src_zz
 	real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: src_xy, src_yx, src_xz, src_zx, src_yz, src_zy
 
 	!======================================================================
@@ -110,13 +110,13 @@ implicit none
 	!======================================================================
 	! weak form stress fields
 	!======================================================================
-	
+
 	real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: sx, sy, sz
-	
+
 	!======================================================================
 	! strong form stress fields
 	!======================================================================
-	
+
 	real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: sxx,syy,szz
 	real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: sxy,sxz,syz
 
@@ -131,30 +131,30 @@ implicit none
         real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: prof_x, prof_y, prof_z, prof, taper
 	real, dimension(0:(nx_max+1)*lpd,0:(ny_max+1)*lpd,0:(nz_max+1)*lpd) :: prof_global, taper_global
         real :: E_kin, E_kin_old
-	
+
 	!======================================================================
 	! geometrical parameters
 	!======================================================================
-	
+
 	real, dimension(0:7) :: knots, w
 	real, dimension(0:7,0:7) :: dl
-	
+
 	real :: dx, dy, dz
 	real :: xmin,xmax,ymin,ymax,zmin,zmax
 	real :: xmin_global, xmax_global, ymin_global, ymax_global, zmin_global, zmax_global
-	
+
 	real, dimension(0:nx_max,0:lpd) :: x
 	real, dimension(0:ny_max,0:lpd) :: y
 	real, dimension(0:nz_max,0:lpd) :: z
-	
+
 	real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: sin_theta, r, cot_theta, cos_theta
 
 	real :: Jac
-	
+
 	!======================================================================
 	! time parameters
 	!======================================================================
-	
+
 	integer :: it, nt
 	real :: dt
 
@@ -164,18 +164,18 @@ implicit none
 
 	integer :: source_type
 	integer :: isx, isy, isz, isx_n, isy_n, isz_n
-        
+
 	real :: xxs, yys, zzs
 	real :: xxs_loc, yys_loc, zzs_loc
 	real :: is_source, source_processor
 	real, dimension(1:maxnt) :: so
-	
+
         real :: MOM_xx, MOM_yy, MOM_zz, MOM_xy, MOM_xz, MOM_yz
-        
+
 	!======================================================================
 	! receiver variables
 	!======================================================================
-	
+
         integer :: nr_global, nr                   		                        	! number of receivers (first line of recfile)
 	real :: recloc_global(1:3,1:maxnr), recloc(1:3,1:maxnr), recloc_std(1:3,1:maxnr)     	! receiver location x, y, depth
         integer :: rx(1:maxnr), ry(1:maxnr), rz(1:maxnr)
@@ -185,22 +185,22 @@ implicit none
         !======================================================================
         ! output
         !======================================================================
-        
+
         character(len=100) :: ofd                                                                       ! output file directory
         character(len=100) :: ffd                                                                       ! forward field directory
 	character(len=100) :: dir
 
 	integer :: output_displacement
 	integer :: ssamp
-        
+
         real :: seismogram_x(1:maxnr,1:maxnt)
         real :: seismogram_y(1:maxnr,1:maxnt)
         real :: seismogram_z(1:maxnr,1:maxnt)
-	
+
 	!======================================================================
 	! other variables
 	!======================================================================
-	
+
 	integer :: is_diss, integer_dummy
 
         !======================================================================
