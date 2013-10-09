@@ -49,7 +49,7 @@ implicit none
 	integer :: p, my_rank, ierr
 
 	integer :: n_events, i_events
-	character (len=255), dimension(1:1000) :: event_indices
+	character (len=1000), dimension(1:1000) :: event_indices
 
 	!======================================================================
 	! physical model parameters
@@ -186,9 +186,9 @@ implicit none
         ! output
         !======================================================================
 
-        character(len=100) :: ofd                                                                       ! output file directory
-        character(len=100) :: ffd                                                                       ! forward field directory
-	character(len=100) :: dir
+        character(len=1000) :: ofd                                                                       ! output file directory
+        character(len=1000) :: ffd                                                                       ! forward field directory
+	character(len=1000) :: dir
 
 	integer :: output_displacement
 	integer :: ssamp
