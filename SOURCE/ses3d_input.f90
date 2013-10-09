@@ -228,6 +228,7 @@ include 'mpif.h'
 		write(99,*) '- output directory -----------------------------------------'
 		read(15,*)junk
 		read(15,'(A100)')ofd
+        ofd = ofd//'/'
 		write(99,*) 'output field directory: ', ofd
         !- Create the directory if it does not exist.
         call system('mkdir -p '//ofd)
@@ -300,7 +301,7 @@ include 'mpif.h'
 		read(15,*)samp_ad
 		write(99,*) 'forward field storing rate:', samp_ad
 		read(15,'(A100)') ffd
-		ffd=ffd(1:len_trim(ffd))//trim(event_indices(i_events))//'/'
+		ffd=ffd(1:len_trim(ffd))//'/'//trim(event_indices(i_events))//'/'
 		write(99,*) 'forward field directory: ', ffd
         !- Create the directory if it does not exist.
         call system('mkdir -p '//ffd)
