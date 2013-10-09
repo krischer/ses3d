@@ -380,14 +380,14 @@ include 'mpif.h'
 
 	call mpi_bcast(is_diss, 1, mpi_integer, 0, mpi_comm_world, ierr)
 
-	call mpi_bcast(ofd,100,mpi_character,0,mpi_comm_world,ierr)
+	call mpi_bcast(ofd,1000,mpi_character,0,mpi_comm_world,ierr)
 
 	call mpi_bcast(ssamp, 1, mpi_integer, 0, mpi_comm_world, ierr)
 	call mpi_bcast(output_displacement, 1, mpi_integer, 0, mpi_comm_world, ierr)
 
 	call mpi_bcast(adjoint_flag,1,mpi_integer,0,mpi_comm_world,ierr)
 	call mpi_bcast(samp_ad, 1, mpi_integer, 0, mpi_comm_world, ierr)
-	call mpi_bcast(ffd,100,mpi_character,0,mpi_comm_world,ierr)
+	call mpi_bcast(ffd,1000,mpi_character,0,mpi_comm_world,ierr)
 
 	call mpi_bcast(tau_p,3,mpi_real,0,mpi_comm_world,ierr)
 	call mpi_bcast(D_p,3,mpi_real,0,mpi_comm_world,ierr)

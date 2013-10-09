@@ -26,7 +26,7 @@ include 'mpif.h'
         real, dimension(0:nx,0:ny,0:nz,0:deg,0:deg,0:deg) :: cfield
 
         character(len=10) :: dummy, ns
-        character(len=100) :: fn
+        character(len=1000) :: fn
 	character(len=*), intent(in) :: name
 
         !======================================================================
@@ -178,7 +178,7 @@ include 'mpif.h'
 
         character(len=*), intent(in) :: name
         character(len=10) :: dummy
-        character(len=100) :: fn
+        character(len=1000) :: fn
 
 	!======================================================================
 	! read lower degree polynomial collocation point values
@@ -270,7 +270,7 @@ include 'mpif.h'
 	integer, intent(in) :: n
         integer :: i, j, k
 	character(len=10) :: dummy, ns
-	character(len=200) :: fn
+	character(len=1000) :: fn
 	character(len=12) :: sname
 
 	!======================================================================
