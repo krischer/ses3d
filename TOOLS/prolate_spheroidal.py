@@ -45,11 +45,11 @@ def PSSeq(N,W):
 
     eigval,c = PSSeq(N,W)
 
-    INPUT: 
+    INPUT:
     N=length of the index series
     W=frequency bandwidth, W in [-0.5, 0.5]
 
-    OUTPUT: 
+    OUTPUT:
     eigval[k] is the eigenvalue of the k-th PSWF
     c[:,k] is the corresponding ith eigenvector
     """
@@ -78,7 +78,7 @@ def PSSeq(N,W):
         c[:,k]=c[:,k]/const[k]
 
     eigval=4*W*W*eigval/(const**2)
-    
+
     #- sort the eigenvalues in descending order
 
     sort_index=argsort(-eigval)
@@ -170,7 +170,7 @@ def PSPlot(N,W,k):
 
     eigval,Psi=PSFreq(N,W,N-1,nu)
     eigval,psi=PSIdx(N,W,N-1,n)
-    
+
     #- plot results
 
     subplot(211)
@@ -190,4 +190,4 @@ def PSPlot(N,W,k):
     grid(True)
 
     show()
-    
+

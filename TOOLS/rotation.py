@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pylab as plt
 
 ###################################################################################################
-#- rotation matrix 
+#- rotation matrix
 ###################################################################################################
 
 def rotation_matrix(n,phi):
@@ -22,7 +22,7 @@ def rotation_matrix(n,phi):
   R=(1.0-np.cos(phi))*A+np.cos(phi)*B+np.sin(phi)*C
 
   return np.matrix(R)
-  
+
 
 ###################################################################################################
 #- rotate coordinates
@@ -97,8 +97,8 @@ def rotate_moment_tensor(n,phi,colat,lon,M):
   br=np.matrix([[np.cos(lon)*np.sin(colat)],[np.sin(lon)*np.sin(colat)],[np.cos(colat)]])
 
   # original basis vectors with respect to rotated unit vectors
-  
-  bt=R*bt	
+
+  bt=R*bt
   bp=R*bp
   br=R*br
 

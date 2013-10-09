@@ -26,7 +26,7 @@ include 'mpif.h'
 
 	do i=0,nx
 	do in=0,lpd
-	  
+
 	  index_x=i*lpd+in	! global index in x-direction
 
 	do j=0,ny
@@ -38,7 +38,7 @@ include 'mpif.h'
 	do kn=0,lpd
 
 	  index_z=k*lpd+kn	! global index in z-direction
-		
+
 	  vx(i,j,k,in,jn,kn)=vx_global(index_x,index_y,index_z)
 	  vy(i,j,k,in,jn,kn)=vy_global(index_x,index_y,index_z)
 	  vz(i,j,k,in,jn,kn)=vz_global(index_x,index_y,index_z)
@@ -66,7 +66,7 @@ include 'mpif.h'
            	dummy_3=2*dl(q,i)/dz
               	dummy_2=2*dl(q,i)/dy
               	dummy_1=2*dl(q,i)/dx
-	
+
 	      	!----------------------------------------------------------------
 	      	!- velocity field -----------------------------------------------
 	      	!----------------------------------------------------------------
@@ -136,11 +136,11 @@ include 'mpif.h'
 	exy=(exy+eyx)/2
 	exz=(exz+ezx)/2
 	eyz=(eyz+ezy)/2
-	
+
 	!======================================================================
 	! make strong form stress rates
 	!======================================================================
-	
+
         ! - diagonal stress rates ---------------------------------------------
 
         if (is_diss==1) then	!- dissipation on
@@ -163,7 +163,7 @@ include 'mpif.h'
               	sxx=L+2*mu_tau*exx+2*mu*Mdx+C*ezz+A*(eyy+exx)
               	syy=L+2*mu_tau*eyy+2*mu*Mdy+C*ezz+A*(eyy+exx)
               	szz=L+2*mu_tau*ezz+2*mu*Mdz+C*(eyy+exx)
-              
+
         else			!- dissipation off
 
               	L=lambda*(exx+eyy+ezz)
@@ -174,13 +174,13 @@ include 'mpif.h'
         endif
 
 	!- off-diagonal stress rates -------------------------------------------------
-		
+
         if (is_diss==1) then		!- dissipation on
 
            	Mdx=0.0
            	Mdy=0.0
            	Mdz=0.0
-           
+
            	do k=1,nrdiss
 
               		Mdx=Mdx+Mxy(k,:,:,:,:,:,:)
@@ -200,7 +200,7 @@ include 'mpif.h'
               	syz=2*mu*eyz+2*B*eyz
 
         endif
-		
+
         !======================================================================
         ! march pml stresses (integrate stress rates)
         !======================================================================
@@ -221,7 +221,7 @@ include 'mpif.h'
 	!======================================================================
 	! make weak form of stress divergence
 	!======================================================================
-	
+
 	!- make moment tensor source if there is one
 
 	if ((adjoint_flag==0) .or. (adjoint_flag==1)) then
@@ -249,20 +249,20 @@ include 'mpif.h'
         		dummy_z=w(q)*dl(k,q)*r(:,:,:,i,j,q)*r(:,:,:,i,j,q)*sin_theta(:,:,:,i,j,q)*dummy_3
 
         		sx(:,:,:,i,j,k)=sx(:,:,:,i,j,k) &
-                       		+(szx_pml(:,:,:,i,j,q)+src_zx(:,:,:,i,j,q))*dummy_z &      
-                       		+(syx_pml(:,:,:,i,q,k)+src_yx(:,:,:,i,q,k))*dummy_y &                                
-                       		+(sxx_pml(:,:,:,q,j,k)+src_xx(:,:,:,q,j,k))*dummy_x                      
-	
+                       		+(szx_pml(:,:,:,i,j,q)+src_zx(:,:,:,i,j,q))*dummy_z &
+                       		+(syx_pml(:,:,:,i,q,k)+src_yx(:,:,:,i,q,k))*dummy_y &
+                       		+(sxx_pml(:,:,:,q,j,k)+src_xx(:,:,:,q,j,k))*dummy_x
+
         		sy(:,:,:,i,j,k)=sy(:,:,:,i,j,k) &
-                       		+(szy_pml(:,:,:,i,j,q)+src_zy(:,:,:,i,j,q))*dummy_z &      
-                       		+(syy_pml(:,:,:,i,q,k)+src_yy(:,:,:,i,q,k))*dummy_y &                                            
-                       		+(sxy_pml(:,:,:,q,j,k)+src_xy(:,:,:,q,j,k))*dummy_x                       
-	
+                       		+(szy_pml(:,:,:,i,j,q)+src_zy(:,:,:,i,j,q))*dummy_z &
+                       		+(syy_pml(:,:,:,i,q,k)+src_yy(:,:,:,i,q,k))*dummy_y &
+                       		+(sxy_pml(:,:,:,q,j,k)+src_xy(:,:,:,q,j,k))*dummy_x
+
         		sz(:,:,:,i,j,k)=sz(:,:,:,i,j,k) &
-                       		+(szz_pml(:,:,:,i,j,q)+src_zz(:,:,:,i,j,q))*dummy_z &      
-                       		+(syz_pml(:,:,:,i,q,k)+src_yz(:,:,:,i,q,k))*dummy_y &                                            
-                       		+(sxz_pml(:,:,:,q,j,k)+src_xz(:,:,:,q,j,k))*dummy_x                       
- 			
+                       		+(szz_pml(:,:,:,i,j,q)+src_zz(:,:,:,i,j,q))*dummy_z &
+                       		+(syz_pml(:,:,:,i,q,k)+src_yz(:,:,:,i,q,k))*dummy_y &
+                       		+(sxz_pml(:,:,:,q,j,k)+src_xz(:,:,:,q,j,k))*dummy_x
+
 		enddo
 
 	enddo
@@ -278,7 +278,7 @@ include 'mpif.h'
 	!======================================================================
 	! map local force vectors to global force vectors
 	!======================================================================
-	
+
 	sx_global(:,:,:)=0.0
 	sy_global(:,:,:)=0.0
 	sz_global(:,:,:)=0.0
@@ -345,13 +345,13 @@ include 'mpif.h'
 
               Mzz(k,:,:,:,:,:,:)=Mzz(k,:,:,:,:,:,:)-dt*Mzz(k,:,:,:,:,:,:)/tau_p(k) &
                                 -L(:,:,:,:,:,:)*ezz(:,:,:,:,:,:)
-              
+
               Mxy(k,:,:,:,:,:,:)=Mxy(k,:,:,:,:,:,:)-dt*Mxy(k,:,:,:,:,:,:)/tau_p(k) &
                                 -L(:,:,:,:,:,:)*exy(:,:,:,:,:,:)
 
               Mxz(k,:,:,:,:,:,:)=Mxz(k,:,:,:,:,:,:)-dt*Mxz(k,:,:,:,:,:,:)/tau_p(k) &
                                 -L(:,:,:,:,:,:)*exz(:,:,:,:,:,:)
-              
+
               Myz(k,:,:,:,:,:,:)=Myz(k,:,:,:,:,:,:)-dt*Myz(k,:,:,:,:,:,:)/tau_p(k) &
                                 -L(:,:,:,:,:,:)*eyz(:,:,:,:,:,:)
 

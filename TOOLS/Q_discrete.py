@@ -16,23 +16,23 @@ import random as rd
 #--------------------------------------------------------------------------------------------------
 
 #- array of target Q's
-Q_0=np.array([25.0, 100.0, 500.0, 1000.0])                             
+Q_0=np.array([25.0, 100.0, 500.0, 1000.0])
 
 #- minimum and maximum frequencies for optimisation in Hz
-f_min=1.0/100.0                 
-f_max=1.0/10.0                  
+f_min=1.0/100.0
+f_max=1.0/10.0
 
 #- minimum and maximum frequencies for plotting in Hz
-f_min_plot=1.0/200.0       
-f_max_plot=1.0/5.0           
+f_min_plot=1.0/200.0
+f_max_plot=1.0/5.0
 
 #- number of relaxation mechanisms
-N=3                         
+N=3
 
 #- optimisation parameters (number of iterations, temperature, temperature decrease)
-max_it=30000             
-T=0.2                       
-d=0.9998                     
+max_it=30000
+T=0.2
+d=0.9998
 
 #--------------------------------------------------------------------------------------------------
 #- initialisations --------------------------------------------------------------------------------

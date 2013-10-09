@@ -12,7 +12,7 @@ import prolate_spheroidal as ps
 class adjoint_source:
   """ class for computing, visualising and storing adjoint sources
 
-  The prodedure is as follows: (1) fetch a seismogram using fetch_seismogram, (2) compute an adjoint source using one of 
+  The prodedure is as follows: (1) fetch a seismogram using fetch_seismogram, (2) compute an adjoint source using one of
   the functions make_adsrc_*, (3) plot the adjoint source with plot, and (4) write it to a file with write.
   """
 
@@ -30,7 +30,7 @@ class adjoint_source:
 
   def fetch_seismogram(self,seismogram):
     """ function for fetching a seismogram, i.e. a member of the ses3d_seismogram class
-  
+
     fetch_seismogram(ses3d_seismogram)
     """
 
@@ -168,7 +168,7 @@ class adjoint_source:
     u=0.0+0.0j
 
     for k in np.arange(k_max+1):
-      eta[k]=np.sum(d[n]*psi[:,k]*np.exp(-2*np.pi*1j*n*nu)) 
+      eta[k]=np.sum(d[n]*psi[:,k]*np.exp(-2*np.pi*1j*n*nu))
 
     for k in np.arange(k_max+1):
       u=u+eta[k]*Psi[0,k]/eigval[k]
@@ -184,7 +184,7 @@ class adjoint_source:
 
     for k in np.arange(k_max+1):
       adsrc[n]=adsrc[n]+Psi[0,k]*psi[:,k]*np.exp(-2*np.pi*1j*n*nu)/eigval[k]
-   
+
     adsrc=adsrc/(2*np.pi*self.s.dt*nu*u)
 
     #- differentiate adjoint source time function for measurements on velocity seismograms
@@ -280,7 +280,7 @@ class adjoint_source:
     u=0.0+0.0j
 
     for k in np.arange(k_max+1):
-      eta[k]=np.sum(d[n]*psi[:,k]*np.exp(-2*np.pi*1j*n*nu)) 
+      eta[k]=np.sum(d[n]*psi[:,k]*np.exp(-2*np.pi*1j*n*nu))
 
     for k in np.arange(k_max+1):
       u=u+eta[k]*Psi[0,k]/eigval[k]
@@ -296,7 +296,7 @@ class adjoint_source:
 
     for k in np.arange(k_max+1):
       adsrc[n]=adsrc[n]+Psi[0,k]*psi[:,k]*np.exp(-2*np.pi*1j*n*nu)/eigval[k]
-   
+
     adsrc=adsrc/(self.s.dt*u)
 
     #- differentiate adjoint source time function for measurements on velocity seismograms
@@ -350,7 +350,7 @@ class adjoint_source:
     N=int(round(win_right/self.s.dt)-N_0)
 
     taper=np.zeros(self.s.nt,dtype=float)
-     
+
     n=(self.s.t>win_left) & (self.s.t<win_right)
     taper[n]=1.0
 
@@ -372,7 +372,7 @@ class adjoint_source:
     #- compute adjoint source
 
     adsrc=np.zeros(self.s.nt,dtype=float)
-    
+
     d=np.cumsum(d)*self.s.dt
     adsrc=-d/(np.sum(d*d)*self.s.dt)
 
@@ -426,7 +426,7 @@ class adjoint_source:
     N=int(round(win_right/self.s.dt)-N_0)
 
     taper=np.zeros(self.s.nt,dtype=float)
-     
+
     n=(self.s.t>win_left) & (self.s.t<win_right)
     taper[n]=1.0
 
@@ -448,7 +448,7 @@ class adjoint_source:
     #- compute adjoint source
 
     adsrc=np.zeros(self.s.nt,dtype=float)
-    
+
     adsrc=d/(np.sum(d*d)*self.s.dt)
 
     #- differentiate adjoint source time function for measurements on velocity seismograms

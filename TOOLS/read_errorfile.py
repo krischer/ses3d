@@ -111,9 +111,9 @@ for n in range(N):
         #- check end of file
         if idx=='':
             eof=True
-        
+
     #- close file
-    
+
     fid.close()
 
     #- append to event_list
@@ -137,7 +137,7 @@ for n in range(N):
     slon=event_list[n].src_lon
     if slon>180:
         slon=slon-360
-        
+
     for k in range(event_list[n].n_rec):
         rlat=float(event_list[n].rec_lat[k])
         rlon=float(event_list[n].rec_lon[k])
@@ -146,7 +146,7 @@ for n in range(N):
 
         if plot_ray_paths==True:
             m.drawgreatcircle(slon,slat,rlon,rlat,linewidth=0.5,color='k')
-            
+
         x,y=m(rlon,rlat)
         m.plot(x,y,'bo',markersize=5.0)
 

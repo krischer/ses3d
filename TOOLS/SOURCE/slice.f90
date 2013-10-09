@@ -36,40 +36,40 @@ implicit none
 
 	integer, intent(in) :: value
 	character(len=*), intent(inout) :: string
-	
+
 	character(len=10) :: c
 	integer :: k, n, new_value, is
 	real :: e
-	
+
 	e=1e9
 	is=0
-	
+
 	if (value==0) then
 		string(1:1)='0'
 		string(2:10)=' '
 	else
-	
+
 		new_value=value
-	
+
 		do k=1,10
 			c(k:k)=char(floor(new_value/e)+48)
-		
+
 			if ((floor(new_value/e)==0) .and. (is==0)) then
 				n=k
 			else
 				is=1
 			endif
-		
+
 			new_value=new_value-e*floor(new_value/e)
 			e=e/10
 			string(k:k)=' '
-		
+
 		enddo
-		
+
 		string(1:10-n)=c(n+1:10)
-		
+
 	endif
-	
+
 	if (len(string)>10) then
 		string(11:len(string))=' '
 	endif

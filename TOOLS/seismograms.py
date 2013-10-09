@@ -36,12 +36,12 @@ class ses3d_seismogram:
   def read(self,directory,station_name,integrate=False):
     """ read seismogram
     read(directory,station_name,integrate)
-  
+
     directory: directory where seismograms are located
     station_name: name of the station, without '.x', '.y' or '.z'
     integrate: integrate original velocity seismograms to displacement seismograms (important for adjoint sources)
     """
-  
+
     self.integrate=integrate
 
     # open files ====================================================
@@ -80,7 +80,7 @@ class ses3d_seismogram:
       self.trace_x[k]=float(fx.readline().strip())
       self.trace_y[k]=float(fy.readline().strip())
       self.trace_z[k]=float(fz.readline().strip())
-	
+
     self.t=np.linspace(0,self.nt*self.dt,self.nt)
 
     # integrate to displacement seismograms =========================

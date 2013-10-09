@@ -28,39 +28,39 @@ implicit none
 	!-----------------------------------------------------------------------
 	!- initialisations
 	!-----------------------------------------------------------------------
-		
+
 	if (deg==2) then
-		
+
 		knots(0)=-1.0
 		knots(1)=0.0
 		knots(2)=1.0
-		
+
 	elseif (deg==3) then
-		
+
 		knots(0)=-1.0
 		knots(1)=-0.4472135954999579
 		knots(2)=0.4472135954999579
 		knots(3)=1.0
-		
+
 	elseif (deg==4) then
-		
+
 		knots(0)=-1.0
 		knots(1)=-0.6546536707079772
 		knots(2)=0.0
 		knots(3)=0.6546536707079772
 		knots(4)=1.0
-		
+
 	elseif (deg==5) then
-		
+
 		knots(0)=-1.0
 		knots(1)=-0.7650553239294647
 		knots(2)=-0.2852315164806451
 		knots(3)=0.2852315164806451
 		knots(4)=0.7650553239294647
 		knots(5)=1.0
-		
+
 	elseif (deg==6) then
-		
+
 		knots(0)=-1.0
 		knots(1)=-0.8302238962785670
 		knots(2)=-0.4688487934707142
@@ -68,9 +68,9 @@ implicit none
 		knots(4)=0.4688487934707142
 		knots(5)=0.8302238962785670
 		knots(6)=1.0
-		
+
 	elseif (deg==7) then
-		
+
 		knots(0)=-1.0
 		knots(1)=-0.8717401485096066
 		knots(2)=-0.5917001814331423
@@ -79,7 +79,7 @@ implicit none
 		knots(5)=0.5917001814331423
 		knots(6)=0.8717401485096066
 		knots(7)=1.0
-		
+
 	endif
 
 	!-----------------------------------------------------------------------
@@ -93,7 +93,7 @@ implicit none
 		if (i .ne. idx) then
 			z0(j)=-knots(i)
 			j=j+1
-		endif	
+		endif
 	enddo
 
 	!- compute polynomial coefficients -------------------------------------
@@ -120,7 +120,7 @@ implicit none
 		!- successively compute coefficients for higher polynomials
 
 		do i=3,deg
-			
+
 			!- compute the remaining coefficients
 
 			do k=(i-2),1,-1
@@ -194,22 +194,22 @@ implicit none
 	!-0-==========================================================================
 	! local variables
 	!=============================================================================
-	
+
 	character(len=5) :: comp
 	character(len=10) :: int2str
 	character(len=60) :: junk, fn, cit
 	character(len=140) :: fn_model, fn_output
-	
+
 	integer :: nx_min_loc, nx_max_loc
 	integer :: ny_min_loc, ny_max_loc
 	integer :: nz_min_loc, nz_max_loc
 	integer :: ix_multi_loc, iy_multi_loc, iz_multi_loc
 	integer :: rank, ind
-	
+
 	integer :: nsubvol, isubvol
 
 	integer :: i, j, k, l, m, n, indx, indy, indz
-	
+
 	integer :: ix_min, ix_max, iy_min, iy_max, iz_min, iz_max
 	real :: res(1:2), dbx, dby, dbz
 
@@ -224,43 +224,43 @@ implicit none
 	real, allocatable, dimension(:,:,:) :: p_normalisation
 
 	real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: normalisation
-  
+
 	!-0-==========================================================================
 	! initialisations
 	!=============================================================================
-			
+
 	if (lpd==2) then
-		
+
 		knots(0)=-1.0
 		knots(1)=0.0
 		knots(2)=1.0
-	
+
 	elseif (lpd==3) then
-		
+
 		knots(0)=-1.0
 		knots(1)=-0.4472135954999579
 		knots(2)=0.4472135954999579
 		knots(3)=1.0
-		
+
 	elseif (lpd==4) then
-		
+
 		knots(0)=-1.0
 		knots(1)=-0.6546536707079772
 		knots(2)=0.0
 		knots(3)=0.6546536707079772
 		knots(4)=1.0
-		
+
 	elseif (lpd==5) then
-		
+
 		knots(0)=-1.0
 		knots(1)=-0.7650553239294647
 		knots(2)=-0.2852315164806451
 		knots(3)=0.2852315164806451
 		knots(4)=0.7650553239294647
 		knots(5)=1.0
-		
+
 	elseif (lpd==6) then
-		
+
 		knots(0)=-1.0
 		knots(1)=-0.8302238962785670
 		knots(2)=-0.4688487934707142
@@ -268,9 +268,9 @@ implicit none
 		knots(4)=0.4688487934707142
 		knots(5)=0.8302238962785670
 		knots(6)=1.0
-		
+
 	elseif (lpd==7) then
-		
+
 		knots(0)=-1.0
 		knots(1)=-0.8717401485096066
 		knots(2)=-0.5917001814331423
@@ -279,36 +279,36 @@ implicit none
 		knots(5)=0.5917001814331423
 		knots(6)=0.8717401485096066
 		knots(7)=1.0
-		
+
 	endif
 
 	!-0-==========================================================================
 	! read external input
 	!=============================================================================
-	
+
 	write(*,*) 'directory for model files: '
 	read(*,*) fn_model
 	write(*,*) 'confirm directory: ', fn_model
-	
+
 	write(*,*) 'directory for output: '
 	read(*,*) fn_output
 	write(*,*) 'confirm directory: ', fn_output
-	
+
 	cit=int2str(it)
 
 	!-0-==========================================================================
 	! open gradient file and read header block coordinates
 	!=============================================================================
-		
+
 	open(unit=120,file=fn_output(1:len_trim(fn_output))//'vsh',action='write')
 	open(unit=130,file=fn_output(1:len_trim(fn_output))//'vsv',action='write')
 	open(unit=140,file=fn_output(1:len_trim(fn_output))//'vp',action='write')
 	open(unit=150,file=fn_output(1:len_trim(fn_output))//'rho',action='write')
-	
+
 	open(unit=71,file='../MODELS/MODELS_3D/block_x',status='old',action='read')
 	open(unit=72,file='../MODELS/MODELS_3D/block_y',status='old',action='read')
 	open(unit=73,file='../MODELS/MODELS_3D/block_z',status='old',action='read')
-	
+
 	read(71,*) nsubvol
 	read(72,*) nsubvol
 	read(73,*) nsubvol
@@ -331,19 +331,19 @@ implicit none
 		read(71,*) nbx
 		read(72,*) nby
 		read(73,*) nbz
-		
+
 		allocate(p_csh(1:nbx-1,1:nby-1,1:nbz-1))
-		allocate(p_csv(1:nbx-1,1:nby-1,1:nbz-1))	
+		allocate(p_csv(1:nbx-1,1:nby-1,1:nbz-1))
 		allocate(p_cp(1:nbx-1,1:nby-1,1:nbz-1))
 		allocate(p_rho(1:nbx-1,1:nby-1,1:nbz-1))
 
 		allocate(p_mu(1:nbx-1,1:nby-1,1:nbz-1))
-		allocate(p_lambda(1:nbx-1,1:nby-1,1:nbz-1))	
+		allocate(p_lambda(1:nbx-1,1:nby-1,1:nbz-1))
 		allocate(p_b(1:nbx-1,1:nby-1,1:nbz-1))
 		allocate(p_rhoinv(1:nbx-1,1:nby-1,1:nbz-1))
 
 		allocate(p_normalisation(1:nbx-1,1:nby-1,1:nbz-1))
-		
+
 		allocate(bxco(1:nbx))
 		allocate(byco(1:nby))
 		allocate(bzco(1:nbz))
@@ -354,7 +354,7 @@ implicit none
 		p_csv(:,:,:)=0.0
 		p_cp(:,:,:)=0.0
 		p_rho(:,:,:)=0.0
-	
+
 		p_lambda(:,:,:)=0.0
 		p_mu(:,:,:)=0.0
 		p_b(:,:,:)=0.0
@@ -385,9 +385,9 @@ implicit none
 		!=====================================================================
 
 		write(*,*) '----------------------------------'
-	
+
 		open(unit=15,file='../MODELS/MODELS/boxfile',status='old',action='read')
-	
+
 		read(15,*) junk
 		read(15,*) junk
 		read(15,*) junk
@@ -402,7 +402,7 @@ implicit none
 		read(15,*) junk
 		read(15,*) junk
 		read(15,*) junk
-	
+
 		read(15,*) p
 		read(15,*) px
 		read(15,*) py
@@ -411,9 +411,9 @@ implicit none
 		!-1-==================================================================
 		! read individual box information
 		!=====================================================================
-	
-		read(15,*) junk	
-	
+
+		read(15,*) junk
+
 		do ind=1,p
 
 		      write(*,*) ind
@@ -421,7 +421,7 @@ implicit none
 		      !-2-============================================================
 		      ! read boxfile entries for one processor
 		      !===============================================================
-				
+
 		      read(15,*) rank
 		      read(15,*) ix_multi_loc, iy_multi_loc, iz_multi_loc
 		      read(15,*) nx_min_loc, nx_max_loc
@@ -431,21 +431,21 @@ implicit none
 		      read(15,*) ymin, ymax
 		      read(15,*) zmin, zmax
 		      read(15,*) junk
-		
+
 		      nx=nx_max_loc-nx_min_loc
 		      ny=ny_max_loc-ny_min_loc
 		      nz=nz_max_loc-nz_min_loc
-		
+
 		      junk=int2str(rank-1)
-    
+
 		      !-2-============================================================
 		      ! make coordinates
 		      !===============================================================
-		
+
 		      dx=(xmax-xmin)/(nx+1)		! width of one element in x direction
 		      dy=(ymax-ymin)/(ny+1)		! width of one element in y direction
 		      dz=(zmax-zmin)/(nz+1)		! width of one element in z direction
-	
+
 		      do i=0,nx
 		      do n=0,lpd
 			x(i,n)=xmin+i*dx+0.5*(1+knots(n))*dx
@@ -458,13 +458,13 @@ implicit none
 			y(j,n)=ymin+j*dy+0.5*(1+knots(n))*dy
 		      enddo
 		      enddo
-	
+
 		      do k=0,nz
 		      do n=0,lpd
 			z(k,n)=zmax-k*dz-0.5*(1+knots(n))*dz
 		      enddo
 		      enddo
-		
+
 		      !-2-============================================================
 		      ! load model files
 		      !===============================================================
@@ -472,7 +472,7 @@ implicit none
 		      !- rhoinv
 
 		      fn=fn_model(1:len_trim(fn_model))//'rhoinv'//junk(1:len_trim(junk))
-		
+
 		      write(*,*) 'open file ', fn
 		      open(unit=10,file=fn,action='read',form='unformatted')
 		      read(10) rhoinv
@@ -481,7 +481,7 @@ implicit none
 		      !- lambda
 
 		      fn=fn_model(1:len_trim(fn_model))//'lambda'//junk(1:len_trim(junk))
-		
+
 		      write(*,*) 'open file ', fn
 		      open(unit=10,file=fn,action='read',form='unformatted')
 		      read(10) lambda
@@ -490,7 +490,7 @@ implicit none
 		      !- mu
 
 		      fn=fn_model(1:len_trim(fn_model))//'mu'//junk(1:len_trim(junk))
-		
+
 		      write(*,*) 'open file ', fn
 		      open(unit=10,file=fn,action='read',form='unformatted')
 		      read(10) mu
@@ -499,7 +499,7 @@ implicit none
 		      !- B
 
 		      fn=fn_model(1:len_trim(fn_model))//'B'//junk(1:len_trim(junk))
-		
+
 		      write(*,*) 'open file ', fn
 		      open(unit=10,file=fn,action='read',form='unformatted')
 		      read(10) B
@@ -508,25 +508,25 @@ implicit none
 		      !-2-============================================================
 		      ! loop over individual blocks
 		      !===============================================================
-				
+
 		      do indx=1,nbx-1
 		      do indy=1,nby-1
 		      do indz=1,nbz-1
-		
+
 			    !-3-======================================================
 			    !- check if processor overlaps with this model block
 			    !=========================================================
-		
+
 			    if ((bxco(indx+1)>=xmin) .and. (bxco(indx)<=xmax) .and. &
 				(byco(indy+1)>=ymin) .and. (byco(indy)<=ymax) .and. &
 				(bzco(indz+1)>=zmin) .and. (bzco(indz)<=zmax)) then
-				
+
 				  !-4-================================================
 				  ! find indices of integration limits
 				  !===================================================
-		
+
 				  !- x-direction
-			
+
 				  if (bxco(indx)>xmin) then
 				    res=minloc(abs(x-bxco(indx)))
 				    ix_min=res(1)-1
@@ -534,9 +534,9 @@ implicit none
 				      ix_min=ix_min+1
 				    endif
 				  else				! eventuell redundant
-				    ix_min=0					
+				    ix_min=0
 				  endif
-		
+
 				  if (bxco(indx+1)<xmax) then
 				    res=minloc(abs(x-bxco(indx+1)))
 				    ix_max=res(1)-1
@@ -546,9 +546,9 @@ implicit none
 				  else				! eventuell redundant
 				    ix_max=nx
 				  endif
-		
+
 				  !- y-direction
-			
+
 				  if (byco(indy)>ymin) then
 				    res=minloc(abs(y-byco(indy)))
 				    iy_min=res(1)-1
@@ -558,7 +558,7 @@ implicit none
 				  else
 				    iy_min=0
 				  endif
-		
+
 				  if (byco(indy+1)<ymax) then
 				    res=minloc(abs(y-byco(indy+1)))
 				    iy_max=res(1)-1
@@ -568,32 +568,32 @@ implicit none
 				  else
 				    iy_max=ny
 				  endif
-		
+
 				  !- z-direction
-	
+
 				  if (bzco(indz)>zmin) then
 				    res=minloc(abs(z-bzco(indz)))
 				    iz_max=res(1)-1
 				  else
 				    iz_max=nz
 				  endif
-		
+
 				  if (bzco(indz+1)<zmax) then
 				    res=minloc(abs(z-bzco(indz+1)))
 				    iz_min=res(1)-1
 				  else
 				    iz_min=0
 				  endif
-		
+
 				  !-4-================================================
 				  ! perform integration
 				  !===================================================
-				
+
 				  do i=ix_min,ix_max	! loop over elements in this box in x direction
 
 				    !- integration limits in x direction ---------------
 
-				    if (bxco(indx)>x(i,0)) then 
+				    if (bxco(indx)>x(i,0)) then
 				      xlima=(2*bxco(indx)-x(i,lpd)-x(i,0))/dx
 				    else
 				      xlima=-1.0
@@ -609,7 +609,7 @@ implicit none
 
 				    !- integration limits in y direction ---------------
 
-				    if (byco(indy)>y(j,0)) then 
+				    if (byco(indy)>y(j,0)) then
 				      ylima=(2*byco(indy)-y(j,lpd)-y(j,0))/dy
 				    else
 				      ylima=-1.0
@@ -647,28 +647,28 @@ implicit none
 				  intz=int_lag(n,lpd,zlima,zlimb)
 
 				  p_normalisation(indx,indy,indz)=p_normalisation(indx,indy,indz)+normalisation(i,j,k,l,m,n)*intx*inty*intz/(dbx*dby*dbz)
-				  
+
 				  p_rhoinv(indx,indy,indz)=p_rhoinv(indx,indy,indz)+rhoinv(i,j,k,l,m,n)*intx*inty*intz/(dbx*dby*dbz)
 				  p_lambda(indx,indy,indz)=p_lambda(indx,indy,indz)+lambda(i,j,k,l,m,n)*intx*inty*intz/(dbx*dby*dbz)
 				  p_mu(indx,indy,indz)=p_mu(indx,indy,indz)+mu(i,j,k,l,m,n)*intx*inty*intz/(dbx*dby*dbz)
 				  p_b(indx,indy,indz)=p_b(indx,indy,indz)+B(i,j,k,l,m,n)*intx*inty*intz/(dbx*dby*dbz)
 
 				enddo
-				enddo	
+				enddo
 				enddo
 
 				enddo
 				enddo
 				enddo
-				  	    
+
 			  endif	! if box is in this processor
-		
+
 		      enddo	! loop over boxes in z direction
 		      enddo	! loop over boxes in y direction
 		      enddo	! loop over boxes in x direction
-          
+
 		enddo	! loop over processors
-		
+
 		close(unit=15)	! close boxfile
 
 		!-1-==================================================================
@@ -679,7 +679,7 @@ implicit none
 		write(130,*) (nbx-1)*(nby-1)*(nbz-1)
 		write(140,*) (nbx-1)*(nby-1)*(nbz-1)
 		write(150,*) (nbx-1)*(nby-1)*(nbz-1)
-	
+
 		p_mu=p_mu/p_normalisation
 		p_lambda=p_lambda/p_normalisation
 		p_b=p_b/p_normalisation
@@ -693,16 +693,16 @@ implicit none
 		do i=1,nbx-1
 		do j=1,nby-1
 		do k=1,nbz-1
-			
+
 		  write(120,*) p_csh(i,j,k)
 		  write(130,*) p_csv(i,j,k)
 		  write(140,*) p_cp(i,j,k)
 		  write(150,*) p_rho(i,j,k)
-	
+
 		enddo
 		enddo
 		enddo
-		
+
 		!-1-==================================================================
 		! clean up
 		!=====================================================================
@@ -718,7 +718,7 @@ implicit none
 		deallocate(p_rhoinv)
 
 		deallocate(p_normalisation)
-	  
+
 		deallocate(bxco)
 		deallocate(byco)
 		deallocate(bzco)
@@ -728,10 +728,10 @@ implicit none
 	!-0-==========================================================================
         ! clean up
         !=============================================================================
-	
+
 	close(unit=120)
 	close(unit=130)
 	close(unit=140)
 	close(unit=150)
-			
+
 end program project_model

@@ -28,20 +28,20 @@ def make_colormap(colors):
 
     from matplotlib.colors import LinearSegmentedColormap, ColorConverter
     from numpy import sort
-    
+
     z = sort(colors.keys())
     n = len(z)
     z1 = min(z)
     zn = max(z)
     x0 = (z - z1) / (zn - z1)
-    
+
     CC = ColorConverter()
     R = []
     G = []
     B = []
     for i in range(n):
         #i'th color at level z[i]:
-        Ci = colors[z[i]]      
+        Ci = colors[z[i]]
         if type(Ci) == str:
             # a hex string of form '#ff0000' for example (for red)
             RGB = CC.to_rgb(Ci)

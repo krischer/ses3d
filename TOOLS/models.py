@@ -77,7 +77,7 @@ class ses3d_model(object):
   #########################################################################
   #- multiplication with a scalar
   #########################################################################
-    
+
   def __rmul__(self,factor):
     """ override left-multiplication of an ses3d model by a scalar factor
     """
@@ -101,7 +101,7 @@ class ses3d_model(object):
   #########################################################################
   #- adding two models
   #########################################################################
-    
+
   def __add__(self,other_model):
     """ override addition of two ses3d models
     """
@@ -162,7 +162,7 @@ class ses3d_model(object):
     idx=np.zeros(self.nsubvol,dtype=int)+1
     idy=np.zeros(self.nsubvol,dtype=int)+1
     idz=np.zeros(self.nsubvol,dtype=int)+1
-    
+
     for k in np.arange(1,self.nsubvol,dtype=int):
       idx[k]=int(dx[idx[k-1]])+idx[k-1]+1
       idy[k]=int(dy[idy[k-1]])+idy[k-1]+1
@@ -178,7 +178,7 @@ class ses3d_model(object):
     #- read model volume ==================================================
 
     fid_m=open(directory+filename,'r')
-    
+
     if verbose==True:
       print 'read model file: '+directory+filename
 
@@ -206,12 +206,12 @@ class ses3d_model(object):
 
   def write(self,directory,filename,verbose=False):
     """ write ses3d model to a file
-    
+
     write(self,directory,filename,verbose=False):
     """
 
     fid_m=open(directory+filename,'w')
-  
+
     if verbose==True:
       print 'write to file '+directory+filename
 
@@ -232,7 +232,7 @@ class ses3d_model(object):
 	    fid_m.write(str(self.m[k].v[idx,idy,idz])+'\n')
 
     fid_m.close()
-    
+
   #########################################################################
   #- CUt Depth LEvel
   #########################################################################
@@ -257,7 +257,7 @@ class ses3d_model(object):
 	subvol=ses3d_submodel()
 	subvol.lat=self.m[n].lat
 	subvol.lon=self.m[n].lon
-	
+
 	idr=(self.m[n].r>=r_min) & (self.m[n].r<=r_max)
 	subvol.r=self.m[n].r[idr]
 
@@ -278,7 +278,7 @@ class ses3d_model(object):
 
     convert_to_vtk(self,directory,filename,verbose=False):
     """
-    
+
     #- preparatory steps
 
     nx=np.zeros(self.nsubvol,dtype=int)
@@ -295,7 +295,7 @@ class ses3d_model(object):
     #- open file and write header
 
     fid=open(directory+filename,'w')
-  
+
     if verbose==True:
       print 'write to file '+directory+filename
 
@@ -316,7 +316,7 @@ class ses3d_model(object):
       for i in np.arange(nx[n]):
 	for j in np.arange(ny[n]):
 	  for k in np.arange(nz[n]):
-            
+
 	    theta=90.0-self.m[n].lat[i]
 	    phi=self.m[n].lon[j]
 
@@ -324,9 +324,9 @@ class ses3d_model(object):
 
 	    if self.phi!=0.0:
 	      theta,phi=rot.rotate_coordinates(self.n,-self.phi,theta,phi)
-	    
+
 	    #- transform to cartesian coordinates and write to file
-	    
+
 	    theta=theta*np.pi/180.0
 	    phi=phi*np.pi/180.0
 
@@ -334,7 +334,7 @@ class ses3d_model(object):
 	    x=r*np.sin(theta)*np.cos(phi);
             y=r*np.sin(theta)*np.sin(phi);
             z=r*np.cos(theta);
-	    
+
 	    fid.write(str(x)+' '+str(y)+' '+str(z)+'\n')
 
     #- write connectivity
@@ -343,7 +343,7 @@ class ses3d_model(object):
 
     for n in np.arange(self.nsubvol):
       n_cells=n_cells+(nx[n]-1)*(ny[n]-1)*(nz[n]-1)
-  
+
     fid.write('\n')
     fid.write('CELLS '+str(n_cells)+' '+str(9*n_cells)+'\n')
 
@@ -368,9 +368,9 @@ class ses3d_model(object):
 	    h=count+k+(j)*nz[n]+(i)*ny[n]*nz[n]           	# 1 1 1
 
 	    fid.write('8 '+str(a)+' '+str(b)+' '+str(c)+' '+str(d)+' '+str(e)+' '+str(f)+' '+str(g)+' '+str(h)+'\n')
-    
+
       count=count+nx[n]*ny[n]*nz[n]
-  
+
     #- write cell types
 
     fid.write('\n')
@@ -384,9 +384,9 @@ class ses3d_model(object):
       for i in np.arange(nx[n]-1):
 	for j in np.arange(ny[n]-1):
 	  for k in np.arange(nz[n]-1):
-  
+
 	    fid.write('11\n')
-            
+
     #- write data
 
     fid.write('\n')
@@ -447,9 +447,9 @@ class ses3d_model(object):
 
     m.drawcoastlines()
     m.drawcountries()
-    
+
     m.drawmapboundary(fill_color=[1.0,1.0,1.0])
-  
+
     if colormap=='tomo':
       my_colormap=cm.make_colormap({0.0:[0.1,0.0,0.0], 0.2:[0.8,0.0,0.0], 0.3:[1.0,0.7,0.0],0.48:[0.92,0.92,0.92], 0.5:[0.92,0.92,0.92], 0.52:[0.92,0.92,0.92], 0.7:[0.0,0.6,0.7], 0.8:[0.0,0.0,0.8], 1.0:[0.0,0.0,0.1]})
     elif colormap=='mono':
@@ -458,7 +458,7 @@ class ses3d_model(object):
     #- loop over subvolumes
 
     for k in np.arange(self.nsubvol):
-  
+
       r=self.m[k].r
 
       #- check if subvolume has values at target depth
@@ -478,13 +478,13 @@ class ses3d_model(object):
 	#- rotate coordinate system if necessary
 
 	if self.phi!=0.0:
-  
+
 	  lat_rot=np.zeros(np.shape(lon),dtype=float)
 	  lon_rot=np.zeros(np.shape(lat),dtype=float)
 
 	  for idx in np.arange(nx):
 	    for idy in np.arange(ny):
-	    
+
 	      colat=90.0-lat[idx,idy]
 
 	      lat_rot[idx,idy],lon_rot[idx,idy]=rot.rotate_coordinates(self.n,-self.phi,colat,lon[idx,idy])
@@ -497,7 +497,7 @@ class ses3d_model(object):
 
 	x,y=m(lon,lat)
 	im=m.pcolor(x,y,self.m[k].v[:,:,idz],cmap=my_colormap,vmin=min_val_plot,vmax=max_val_plot)
-	
+
     m.colorbar(im,"right", size="3%", pad='2%')
     plt.title(str(depth)+' km')
     plt.show()
@@ -528,9 +528,9 @@ class ses3d_model(object):
 
     m.drawcoastlines()
     m.drawcountries()
-    
+
     m.drawmapboundary(fill_color=[1.0,1.0,1.0])
-  
+
     if colormap=='tomo':
       my_colormap=cm.make_colormap({0.0:[0.1,0.0,0.0], 0.2:[0.8,0.0,0.0], 0.3:[1.0,0.7,0.0],0.48:[0.92,0.92,0.92], 0.5:[0.92,0.92,0.92], 0.52:[0.92,0.92,0.92], 0.7:[0.0,0.6,0.7], 0.8:[0.0,0.0,0.8], 1.0:[0.0,0.0,0.1]})
     elif colormap=='mono':
@@ -561,13 +561,13 @@ class ses3d_model(object):
       lon,lat=np.meshgrid(self.m[k].lon[0:ny],self.m[k].lat[0:nx])
 
       if self.phi!=0.0:
-    
+
 	lat_rot=np.zeros(np.shape(lon),dtype=float)
 	lon_rot=np.zeros(np.shape(lat),dtype=float)
 
 	for idx in np.arange(nx):
 	  for idy in np.arange(ny):
-	    
+
 	    colat=90.0-lat[idx,idy]
 
 	    lat_rot[idx,idy],lon_rot[idx,idy]=rot.rotate_coordinates(self.n,-self.phi,colat,lon[idx,idy])
@@ -580,7 +580,7 @@ class ses3d_model(object):
 
       x,y=m(lon,lat)
       im=m.pcolor(x,y,depth,cmap=my_colormap,vmin=min_val_plot,vmax=max_val_plot)
-      
+
     m.colorbar(im,"right", size="3%", pad='2%')
     plt.title('depth to '+str(val)+' km/s [km]')
     plt.show()

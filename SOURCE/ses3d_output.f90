@@ -19,12 +19,12 @@ include 'mpif.h'
 
         integer, intent(in) :: n, deg, tag
         integer :: i, j, k, ip, iq, ir
-	
+
         real :: cknots(0:7)
 	real :: lgll, lgll_dummy
 	real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd), intent(in) :: field
         real, dimension(0:nx,0:ny,0:nz,0:deg,0:deg,0:deg) :: cfield
-        
+
         character(len=10) :: dummy, ns
         character(len=100) :: fn
 	character(len=*), intent(in) :: name
@@ -34,43 +34,43 @@ include 'mpif.h'
         !======================================================================
 
         if (deg<lpd) then
-        	
+
            !======================================================================
            ! determine collocation points (knots) and integration weights
            !======================================================================
-	
+
            if (deg==2) then
-		
+
 		cknots(0)=-1.0
 		cknots(1)=0.0
 		cknots(2)=1.0
-		
+
            elseif (deg==3) then
-		
+
 		cknots(0)=-1.0
 		cknots(1)=-0.4472135954999579
 		cknots(2)=0.4472135954999579
 		cknots(3)=1.0
-		
+
            elseif (deg==4) then
-		
+
 		cknots(0)=-1.0
 		cknots(1)=-0.6546536707079772
 		cknots(2)=0.0
 		cknots(3)=0.6546536707079772
 		cknots(4)=1.0
-		
+
            elseif (deg==5) then
-		
+
 		cknots(0)=-1.0
 		cknots(1)=-0.7650553239294647
 		cknots(2)=-0.2852315164806451
 		cknots(3)=0.2852315164806451
 		cknots(4)=0.7650553239294647
 		cknots(5)=1.0
-		
+
            elseif (deg==6) then
-		
+
 		cknots(0)=-1.0
 		cknots(1)=-0.8302238962785670
 		cknots(2)=-0.4688487934707142
@@ -78,9 +78,9 @@ include 'mpif.h'
 		cknots(4)=0.4688487934707142
 		cknots(5)=0.8302238962785670
 		cknots(6)=1.0
-		
+
            elseif (deg==7) then
-		
+
 		cknots(0)=-1.0
 		cknots(1)=-0.8717401485096066
 		cknots(2)=-0.5917001814331423
@@ -89,7 +89,7 @@ include 'mpif.h'
 		cknots(5)=0.5917001814331423
 		cknots(6)=0.8717401485096066
 		cknots(7)=1.0
-		
+
            endif
 
            !======================================================================
@@ -105,7 +105,7 @@ include 'mpif.h'
               	do ip=0,lpd
                 do iq=0,lpd
 		do ir=0,lpd
- 
+
 			lgll_dummy=lgll(lpd,ip,cknots(i))*lgll(lpd,iq,cknots(j))*lgll(lpd,ir,cknots(k))
                 	cfield(0:nx,0:ny,0:nz,i,j,k)=cfield(0:nx,0:ny,0:nz,i,j,k)+field(0:nx,0:ny,0:nz,ip,iq,ir)*lgll_dummy
 
@@ -168,7 +168,7 @@ include 'mpif.h'
 	!======================================================================
 	! local variables
 	!======================================================================
-	
+
         integer, intent(in) :: idx, deg, tag
         integer :: i, j, k, il, im, in
 
@@ -203,7 +203,7 @@ include 'mpif.h'
 
            	read(tag) cfield
            	backspace(unit=tag)
-	   		if (idx<nt) then           
+	   		if (idx<nt) then
 				backspace(unit=tag)
 	   		endif
 
@@ -266,35 +266,35 @@ include 'mpif.h'
 	!======================================================================
 	! local variables
 	!======================================================================
-	
+
 	integer, intent(in) :: n
         integer :: i, j, k
 	character(len=10) :: dummy, ns
 	character(len=200) :: fn
 	character(len=12) :: sname
-	
+
 	!======================================================================
 	! write displacement fields and preconditioner to files
 	!======================================================================
-	
+
 	call int2str(my_rank,dummy)
 	call int2str(n,ns)
-	
+
 	if (output_displacement==1) then
 
 		fn=ofd(1:len_trim(ofd))//'vx_'//dummy(1:len_trim(dummy))//'_'//ns(1:len_trim(ns))
 		open(unit=10,file=fn,action='write',form='unformatted')
-       		
+
 		fn=ofd(1:len_trim(ofd))//'vy_'//dummy(1:len_trim(dummy))//'_'//ns(1:len_trim(ns))
 		open(unit=11,file=fn,action='write',form='unformatted')
 
 		fn=ofd(1:len_trim(ofd))//'vz_'//dummy(1:len_trim(dummy))//'_'//ns(1:len_trim(ns))
       		open(unit=12,file=fn,action='write',form='unformatted')
-	
+
 		write(10) vx
 		write(11) vy
 		write(12) vz
-	
+
 		close(unit=10)
 		close(unit=11)
 		close(unit=12)
@@ -309,10 +309,10 @@ include 'mpif.h'
 
 		fn=ofd(1:len_trim(ofd))//'grad_rho_'//dummy(1:len_trim(dummy))//'_'//ns(1:len_trim(ns))
 		open(unit=10,file=fn,action='write',form='unformatted')
-       		
+
 		fn=ofd(1:len_trim(ofd))//'grad_cp_'//dummy(1:len_trim(dummy))//'_'//ns(1:len_trim(ns))
     		open(unit=12,file=fn,action='write',form='unformatted')
-	
+
 		fn=ofd(1:len_trim(ofd))//'grad_csh_'//dummy(1:len_trim(dummy))//'_'//ns(1:len_trim(ns))
 		open(unit=14,file=fn,action='write',form='unformatted')
 
@@ -323,7 +323,7 @@ include 'mpif.h'
 		write(12) grad_cp
 		write(14) grad_csh
 		write(15) grad_csv
-	
+
 		close(unit=10)
 		close(unit=12)
 		close(unit=14)
@@ -359,21 +359,21 @@ include 'mpif.h'
 	do i=1,nr
 
 		sname=station_name_local(i)
-	
+
 		open(unit=51,file=ofd(1:len_trim(ofd))//sname//'.x',action='write')
 		open(unit=52,file=ofd(1:len_trim(ofd))//sname//'.y',action='write')
-		open(unit=53,file=ofd(1:len_trim(ofd))//sname//'.z',action='write')	
-	
+		open(unit=53,file=ofd(1:len_trim(ofd))//sname//'.z',action='write')
+
 		write(51,*) 'theta component seismograms'
 		write(52,*) 'phi component seismograms'
 		write(53,*) 'r component seismograms'
-	
+
 		write(51,*) 'nt=', nt
 		write(51,*) 'dt=', dt
-	
+
 		write(52,*) 'nt=', nt
 		write(52,*) 'dt=', dt
-	
+
 		write(53,*) 'nt=', nt
 		write(53,*) 'dt=', dt
 
@@ -394,11 +394,11 @@ include 'mpif.h'
 		write(53,*) 'x=', xxs*180/pi, 'y=', yys*180/pi, 'z=', zzs
 
 		do j=1,nt
-		
+
 			write(51,*) seismogram_x(i,j)
 			write(52,*) seismogram_y(i,j)
 			write(53,*) seismogram_z(i,j)
-			
+
 		enddo
 
 		close(unit=51)
@@ -406,9 +406,9 @@ include 'mpif.h'
 		close(unit=53)
 
 	enddo
-	
+
 	endif
- 
+
 end subroutine ses3d_output
 
 
