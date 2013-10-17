@@ -8,6 +8,7 @@ import random as rd
     For a given array of target Q values, the code determines the optimal relaxation
     times and weights. This is done within in specified frequency range.
 
+
     C_r=1 and rho=1 are assumed. tau is computed from the target Q via 1/Q=0.5*tau*pi.
 """
 
