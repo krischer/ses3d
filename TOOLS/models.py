@@ -463,44 +463,46 @@ class ses3d_model(object):
 
       #- check if subvolume has values at target depth
 
-      if (max(r>=radius) & (min(r)<=radius)):
-	idz=min(np.where(min(np.abs(r-radius))==np.abs(r-radius))[0])
+      if (max(r)>=radius) & (min(r)<radius):
+        
+        r=r[0:len(r)-1]
+        idz=min(np.where(min(np.abs(r-radius))==np.abs(r-radius))[0])
+        if idz==len(r): idz-=idz
 
-	if verbose==True:
-	  print 'true plotting depth: '+str(6371.0-r[idz])+' km'
+        if verbose==True:
+          print 'true plotting depth: '+str(6371.0-r[idz])+' km'
 
-	nx=len(self.m[k].lat)
-	ny=len(self.m[k].lon)
-	nz=len(self.m[k].r)
+        nx=len(self.m[k].lat)
+        ny=len(self.m[k].lon)
+        nz=len(self.m[k].r)
 
-	lon,lat=np.meshgrid(self.m[k].lon[0:ny],self.m[k].lat[0:nx])
+        lon,lat=np.meshgrid(self.m[k].lon[0:ny],self.m[k].lat[0:nx])
 
-	#- rotate coordinate system if necessary
+        #- rotate coordinate system if necessary
 
-	if self.phi!=0.0:
+        if self.phi!=0.0:
 
-	  lat_rot=np.zeros(np.shape(lon),dtype=float)
-	  lon_rot=np.zeros(np.shape(lat),dtype=float)
+          lat_rot=np.zeros(np.shape(lon),dtype=float)
+          lon_rot=np.zeros(np.shape(lat),dtype=float)
 
-	  for idx in np.arange(nx):
-	    for idy in np.arange(ny):
+          for idx in np.arange(nx):
+            for idy in np.arange(ny):
 
-	      colat=90.0-lat[idx,idy]
+              colat=90.0-lat[idx,idy]
+              lat_rot[idx,idy],lon_rot[idx,idy]=rot.rotate_coordinates(self.n,-self.phi,colat,lon[idx,idy])
+              lat_rot[idx,idy]=90.0-lat_rot[idx,idy]
 
-	      lat_rot[idx,idy],lon_rot[idx,idy]=rot.rotate_coordinates(self.n,-self.phi,colat,lon[idx,idy])
-	      lat_rot[idx,idy]=90.0-lat_rot[idx,idy]
+          lon=lon_rot
+          lat=lat_rot
 
-	  lon=lon_rot
-	  lat=lat_rot
+        #- convert to map coordinates and plot
 
-	#- convert to map coordinates and plot
+        x,y=m(lon,lat)
+        im=m.pcolor(x,y,self.m[k].v[:,:,idz],cmap=my_colormap,vmin=min_val_plot,vmax=max_val_plot)
 
-	x,y=m(lon,lat)
-	im=m.pcolor(x,y,self.m[k].v[:,:,idz],cmap=my_colormap,vmin=min_val_plot,vmax=max_val_plot)
-
-    m.colorbar(im,"right", size="3%", pad='2%')
-    plt.title(str(depth)+' km')
-    plt.show()
+        m.colorbar(im,"right", size="3%", pad='2%')
+        plt.title(str(depth)+' km')
+        plt.show()
 
   #########################################################################
   #- plot depth to a certain threshold value
