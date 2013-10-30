@@ -186,7 +186,7 @@ end function int2str
 ! projection onto the basis functions
 !===============================================================================
 
-program make_gradient
+program project_velocity
 use parameters
 use variables
 implicit none
@@ -219,9 +219,7 @@ implicit none
 
 	integer :: nbx, nby, nbz
 	real, allocatable, dimension(:) :: bxco, byco, bzco
-	real, allocatable, dimension(:,:,:) :: gradient_csv, gradient_csh, gradient_cp, gradient_rho
-
-	real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: u_csv, u_csh, u_cp, u_rho
+	real, allocatable, dimension(:,:,:) :: vx_p, vy_p, vz_p
 
 	!-0-==========================================================================
 	! initialisations
@@ -298,13 +296,12 @@ implicit none
 	cit=int2str(it)
 
 	!-0-==========================================================================
-	! open gradient file and read header block coordinates
+	! open projected velocity files and read header block coordinates
 	!=============================================================================
 
-	open(unit=120,file=fn_output(1:len_trim(fn_output))//'gradient_csh',action='write')
-	open(unit=130,file=fn_output(1:len_trim(fn_output))//'gradient_csv',action='write')
-	open(unit=140,file=fn_output(1:len_trim(fn_output))//'gradient_cp',action='write')
-	open(unit=150,file=fn_output(1:len_trim(fn_output))//'gradient_rho',action='write')
+	open(unit=120,file=fn_output(1:len_trim(fn_output))//'vx_'//cit(1:len_trim(cit)),action='write')
+	open(unit=130,file=fn_output(1:len_trim(fn_output))//'vy_'//cit(1:len_trim(cit)),action='write')
+	open(unit=140,file=fn_output(1:len_trim(fn_output))//'vz_'//cit(1:len_trim(cit)),action='write')
 
 	open(unit=71,file='../MODELS/MODELS_3D/block_x',status='old',action='read')
 	open(unit=72,file='../MODELS/MODELS_3D/block_y',status='old',action='read')
@@ -317,7 +314,6 @@ implicit none
 	write(120,*) nsubvol
 	write(130,*) nsubvol
 	write(140,*) nsubvol
-	write(150,*) nsubvol
 
 	!-0-==========================================================================
 	! loop over subvolumes
@@ -333,19 +329,17 @@ implicit none
 		read(72,*) nby
 		read(73,*) nbz
 
-		allocate(gradient_csh(1:nbx-1,1:nby-1,1:nbz-1))
-		allocate(gradient_csv(1:nbx-1,1:nby-1,1:nbz-1))
-		allocate(gradient_cp(1:nbx-1,1:nby-1,1:nbz-1))
-		allocate(gradient_rho(1:nbx-1,1:nby-1,1:nbz-1))
+		allocate(vx_p(1:nbx-1,1:nby-1,1:nbz-1))
+		allocate(vy_p(1:nbx-1,1:nby-1,1:nbz-1))
+		allocate(vz_p(1:nbx-1,1:nby-1,1:nbz-1))
 
 		allocate(bxco(1:nbx))
 		allocate(byco(1:nby))
 		allocate(bzco(1:nbz))
 
-		gradient_csh(:,:,:)=0.0
-		gradient_csv(:,:,:)=0.0
-		gradient_cp(:,:,:)=0.0
-		gradient_rho(:,:,:)=0.0
+		vx_p(:,:,:)=0.0
+		vy_p(:,:,:)=0.0
+		vz_p(:,:,:)=0.0
 
 		do i=1,nbx
 			read(71,*) bxco(i)
@@ -433,61 +427,52 @@ implicit none
 
 		      do i=0,nx
 		      do n=0,lpd
-			x(i,n)=xmin+i*dx+0.5*(1+knots(n))*dx
-			sin_theta(i,:,:,n,:,:)=sin(x(i,n))
+				x(i,n)=xmin+i*dx+0.5*(1+knots(n))*dx
+				sin_theta(i,:,:,n,:,:)=sin(x(i,n))
 		      enddo
 		      enddo
 
 		      do j=0,ny
 		      do n=0,lpd
-			y(j,n)=ymin+j*dy+0.5*(1+knots(n))*dy
+				y(j,n)=ymin+j*dy+0.5*(1+knots(n))*dy
 		      enddo
 		      enddo
 
 		      do k=0,nz
 		      do n=0,lpd
-			z(k,n)=zmax-k*dz-0.5*(1+knots(n))*dz
+				z(k,n)=zmax-k*dz-0.5*(1+knots(n))*dz
 		      enddo
 		      enddo
 
 		      !-2-============================================================
-		      ! load sensitivity kernels
+		      ! load velocity fields
 		      !===============================================================
 
-		      !- csv
+		      !- vx
 
-		      fn=fn_grad(1:len_trim(fn_grad))//'grad_csv_'//junk(1:len_trim(junk))//'_'//cit(1:len_trim(cit))
+		      fn=fn_grad(1:len_trim(fn_grad))//'vx_'//junk(1:len_trim(junk))//'_'//cit(1:len_trim(cit))
 
 		      write(*,*) 'open file ', fn
 		      open(unit=10,file=fn,action='read',form='unformatted')
-		      read(10) u_csv
+		      read(10) vx
 		      close(unit=10)
 
-		      !- csh
+		      !- vy
 
-		      fn=fn_grad(1:len_trim(fn_grad))//'grad_csh_'//junk(1:len_trim(junk))//'_'//cit(1:len_trim(cit))
+		      fn=fn_grad(1:len_trim(fn_grad))//'vy_'//junk(1:len_trim(junk))//'_'//cit(1:len_trim(cit))
 
 		      write(*,*) 'open file ', fn
 		      open(unit=10,file=fn,action='read',form='unformatted')
-		      read(10) u_csh
+		      read(10) vy
 		      close(unit=10)
 
-		      !- cp
+		      !- vz
 
-		      fn=fn_grad(1:len_trim(fn_grad))//'grad_cp_'//junk(1:len_trim(junk))//'_'//cit(1:len_trim(cit))
-
-		      write(*,*) 'open file ', fn
-		      open(unit=10,file=fn,action='read',form='unformatted')
-		      read(10) u_cp
-		      close(unit=10)
-
-		      !- rho
-
-		      fn=fn_grad(1:len_trim(fn_grad))//'grad_rho_'//junk(1:len_trim(junk))//'_'//cit(1:len_trim(cit))
+		      fn=fn_grad(1:len_trim(fn_grad))//'vz_'//junk(1:len_trim(junk))//'_'//cit(1:len_trim(cit))
 
 		      write(*,*) 'open file ', fn
 		      open(unit=10,file=fn,action='read',form='unformatted')
-		      read(10) u_rho
+		      read(10) vz
 		      close(unit=10)
 
 		      !-2-============================================================
@@ -631,10 +616,9 @@ implicit none
 				do n=0,lpd
 				  intz=int_lag(n,lpd,zlima,zlimb)
 
-				  gradient_csv(indx,indy,indz)=gradient_csv(indx,indy,indz)+u_csv(i,j,k,l,m,n)*intx*inty*intz/(dbx*dby*dbz)
-				  gradient_csh(indx,indy,indz)=gradient_csh(indx,indy,indz)+u_csh(i,j,k,l,m,n)*intx*inty*intz/(dbx*dby*dbz)
-				  gradient_cp(indx,indy,indz)=gradient_cp(indx,indy,indz)+u_cp(i,j,k,l,m,n)*intx*inty*intz/(dbx*dby*dbz)
-				  gradient_rho(indx,indy,indz)=gradient_rho(indx,indy,indz)+u_rho(i,j,k,l,m,n)*intx*inty*intz/(dbx*dby*dbz)
+				  vx_p(indx,indy,indz)=vx_p(indx,indy,indz)+vx(i,j,k,l,m,n)*intx*inty*intz/(dbx*dby*dbz)
+				  vy_p(indx,indy,indz)=vy_p(indx,indy,indz)+vy(i,j,k,l,m,n)*intx*inty*intz/(dbx*dby*dbz)
+				  vz_p(indx,indy,indz)=vz_p(indx,indy,indz)+vz(i,j,k,l,m,n)*intx*inty*intz/(dbx*dby*dbz)
 
 				enddo
 				enddo
@@ -661,16 +645,14 @@ implicit none
 		write(120,*) (nbx-1)*(nby-1)*(nbz-1)
 		write(130,*) (nbx-1)*(nby-1)*(nbz-1)
 		write(140,*) (nbx-1)*(nby-1)*(nbz-1)
-		write(150,*) (nbx-1)*(nby-1)*(nbz-1)
 
 		do i=1,nbx-1
 		do j=1,nby-1
 		do k=1,nbz-1
 
-		  write(120,*) gradient_csh(i,j,k)
-		  write(130,*) gradient_csv(i,j,k)
-		  write(140,*) gradient_cp(i,j,k)
-		  write(150,*) gradient_rho(i,j,k)
+		  write(120,*) vx_p(i,j,k)
+		  write(130,*) vy_p(i,j,k)
+		  write(140,*) vz_p(i,j,k)
 
 		enddo
 		enddo
@@ -680,10 +662,9 @@ implicit none
 		! clean up
 		!=====================================================================
 
-		deallocate(gradient_csh)
-		deallocate(gradient_csv)
-		deallocate(gradient_cp)
-		deallocate(gradient_rho)
+		deallocate(vx_p)
+		deallocate(vy_p)
+		deallocate(vz_p)
 
 		deallocate(bxco)
 		deallocate(byco)
@@ -700,4 +681,4 @@ implicit none
 	close(unit=140)
 	close(unit=150)
 
-end program make_gradient
+end program project_velocity

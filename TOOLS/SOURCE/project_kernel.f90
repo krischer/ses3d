@@ -186,7 +186,7 @@ end function int2str
 ! projection onto the basis functions
 !===============================================================================
 
-program make_gradient
+program project_kernel
 use parameters
 use variables
 implicit none
@@ -700,4 +700,4 @@ implicit none
 	close(unit=140)
 	close(unit=150)
 
-end program make_gradient
+end program project_kernel

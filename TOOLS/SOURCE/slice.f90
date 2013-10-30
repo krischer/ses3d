@@ -18,10 +18,6 @@ implicit none
 
 		call ses3d_make_slice_model
 
-	elseif (field_type==3) then
-
-		call ses3d_make_slice_grad
-
 	endif
 
 end program ses3d_make_slice

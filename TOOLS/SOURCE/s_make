@@ -1,9 +1,10 @@
 # compile slicers
 
-mpif90 -O3 -w ../../SOURCE/ses3d_modules.f90 slice_kernel.f90 slice_displacement.f90 slice_model.f90 slice.f90 -o ../slice.exe
+mpif90 -O3 -w ../../SOURCE/ses3d_modules.f90 slice_displacement.f90 slice_model.f90 slice.f90 -o ../slice.exe
 
 # compile projectors
 
 mpif90 -O3 -w ../../SOURCE/ses3d_modules.f90 project_kernel.f90 -o ../project_kernel.exe
 mpif90 -O3 -w ../../SOURCE/ses3d_modules.f90 project_model.f90 -o ../project_model.exe
+mpif90 -O3 -w ../../SOURCE/ses3d_modules.f90 project_velocity.f90 -o ../project_velocity.exe
 
