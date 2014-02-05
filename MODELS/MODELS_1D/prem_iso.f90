@@ -1,9 +1,9 @@
 !================================================================================
-!= 1D European background model.
+!= Isotropic version of PREM. Dziewonski & Anderson, PEPI 1981.
 != Last modified on 5 February 2014 by Andreas Fichtner.
 !================================================================================
 
-subroutine eumod_bg
+subroutine prem_iso
 use variables_gm
 implicit none
 include 'mpif.h'
@@ -54,42 +54,36 @@ include 'mpif.h'
         	elseif ((z(i,k)<=6346600.0) .and. (z(i,k)>=6291000.0)) then	! 24-80 km
                              
         		rho1d(i,k)=2.6910+0.6924*r(i,k)
-            	cp1d(i,k)=4.1875+3.9382*r(i,k)-0.035
-               	cs1d(i,k)=2.1519+2.3481*r(i,k)-0.065
+            	cp1d(i,k)=4.1875+3.9382*r(i,k)
+               	cs1d(i,k)=2.1519+2.3481*r(i,k)
 
         	!- LVZ
-
-            elseif((z(i,k)<=6291000.0) .and. (z(i,k)>=6191000.0)) then	! 80-180 km
-
-            	rho1d(i,k)=2.6910+0.6924*r(i,k)
-            	cp1d(i,k)=4.1875+3.9382*r(i,k)-0.035
-            	cs1d(i,k)=2.1519+2.3481*r(i,k)-0.065
+        	
+        	elseif ((z(i,k)<=6291000.0) .and. (z(i,k)>=6151000.0)) then	! 80-220 km
+        	
+        		rho1d(i,k)=2.6910+0.6924*r(i,k)
+            	cp1d(i,k)=4.1875+3.9382*r(i,k)
+               	cs1d(i,k)=2.1519+2.3481*r(i,k)
 
             !- Transition zone
 
-        	elseif((z(i,k)<=6191000.0) .and. (z(i,k)>=6051000.0)) then	! 180-320 km
-
-        		rho1d(i,k)=9.1790-5.9841*r(i,k)
-            	cp1d(i,k)=40.5988-33.5317*r(i,k)-0.035
-            	cs1d(i,k)=16.8261-12.7527*r(i,k)-0.065
-
-        	elseif((z(i,k)<=6051000.0) .and. (z(i,k)>=5971000.0)) then	! 320-400 km
+        	elseif((z(i,k)<=6151000.0) .and. (z(i,k)>=5971000.0)) then	! 220-400 km
 
 				rho1d(i,k)=7.1089-3.8045*r(i,k)
-            	cp1d(i,k)=20.3926-12.2569*r(i,k)-0.035
-            	cs1d(i,k)=8.9496-4.4597*r(i,k)-0.065
+            	cp1d(i,k)=20.3926-12.2569*r(i,k)
+            	cs1d(i,k)=8.9496-4.4597*r(i,k)
 
 			elseif((z(i,k)<=5971000.0) .and. (z(i,k)>=5771000.0)) then	! 400-600 km
 
             	rho1d(i,k)=11.2494-8.0298*r(i,k)
-            	cp1d(i,k)=39.7027-32.6166*r(i,k)-0.035
-            	cs1d(i,k)=22.3512-18.5856*r(i,k)-0.12
+            	cp1d(i,k)=39.7027-32.6166*r(i,k)
+            	cs1d(i,k)=22.3512-18.5856*r(i,k)
 
         	elseif((z(i,k)<=5771000.0) .and. (z(i,k)>=5701000.0)) then	! 600-670 km
 
             	rho1d(i,k)=5.3197-1.4836*r(i,k)
-               	cp1d(i,k)=19.0957-9.8672*r(i,k)-0.035
-               	cs1d(i,k)=9.9839-4.9324*r(i,k)-0.12
+               	cp1d(i,k)=19.0957-9.8672*r(i,k)
+               	cs1d(i,k)=9.9839-4.9324*r(i,k)
 
         	!- Lower mantle
 
@@ -97,19 +91,19 @@ include 'mpif.h'
 
         		rho1d(i,k)=7.9565-6.4761*r(i,k)+5.5283*r(i,k)*r(i,k)-3.0807*r(i,k)*r(i,k)*r(i,k)
             	cp1d(i,k)=29.2766-23.6026*r(i,k)+5.5242*r(i,k)*r(i,k)-2.5514*r(i,k)*r(i,k)*r(i,k)
-               	cs1d(i,k)=22.3459-17.2473*r(i,k)-2.0834*r(i,k)*r(i,k)+0.9783*r(i,k)*r(i,k)*r(i,k)-0.12
+               	cs1d(i,k)=22.3459-17.2473*r(i,k)-2.0834*r(i,k)*r(i,k)+0.9783*r(i,k)*r(i,k)*r(i,k)
 
           	elseif((z(i,k)<=5600000.0) .and. (z(i,k)>=3630000.0)) then	! 771-2741 km
 
                	rho1d(i,k)=7.9565-6.4761*r(i,k)+5.5283*r(i,k)*r(i,k)-3.0807*r(i,k)*r(i,k)*r(i,k)
                	cp1d(i,k)=24.9520-40.4673*r(i,k)+51.4832*r(i,k)*r(i,k)-26.6419*r(i,k)*r(i,k)*r(i,k)
-               	cs1d(i,k)=11.1671-13.7818*r(i,k)+17.4575*r(i,k)*r(i,k)-9.2777*r(i,k)*r(i,k)*r(i,k)-0.12
+               	cs1d(i,k)=11.1671-13.7818*r(i,k)+17.4575*r(i,k)*r(i,k)-9.2777*r(i,k)*r(i,k)*r(i,k)
 
     		elseif((z(i,k)<=3630000.0) .and. (z(i,k)>=3480000.0)) then	! 2741-2756 km
 
              	rho1d(i,k)=7.9565-6.4761*r(i,k)+5.5283*r(i,k)*r(i,k)-3.0807*r(i,k)*r(i,k)*r(i,k)
                	cp1d(i,k)=15.3891-5.3181*r(i,k)+5.5242*r(i,k)*r(i,k)-2.5514*r(i,k)*r(i,k)*r(i,k)
-               	cs1d(i,k)=6.9254+1.4672*r(i,k)-2.0834*r(i,k)*r(i,k)+0.9783*r(i,k)*r(i,k)*r(i,k)-0.12
+               	cs1d(i,k)=6.9254+1.4672*r(i,k)-2.0834*r(i,k)*r(i,k)+0.9783*r(i,k)*r(i,k)*r(i,k)
 
         	!- Outer core
 
@@ -142,31 +136,73 @@ include 'mpif.h'
 	if (is_diss==1) then
 
 		do i=0,nz_loc
-    	do k=0,lpd
+    		do k=0,lpd
 
-			if ((z(i,k)<=6371000.0) .and. (z(i,k)>=6100000.0)) then
+				!- crust
+		
+				if ((z(i,k)<=6371000.0) .and. (z(i,k)>=6356000.0)) then	! 0-15km
 				  
-				Q1d(i,k)=300.0-5370.82*r(i,k)**2+14401.62*r(i,k)**3-13365.78*r(i,k)**4+4199.98*r(i,k)**5
+					Q1d(i,k)=600.0	
 			     
-			elseif ((z(i,k)<=6100000.0) .and. (z(i,k)>=5701000.0)) then
+				elseif ((z(i,k)<=6356000.0) .and. (z(i,k)>=6346600.0)) then	! 15-24.4km
 				  
-				Q1d(i,k)=165.0
+					Q1d(i,k)=600.0	
+		       
+            	!- LID
 
-        	elseif ((z(i,k)<=5701000.0) .and. (z(i,k)>=3480000.0)) then
+        		elseif ((z(i,k)<=6346600.0) .and. (z(i,k)>=6291000.0)) then	! 24-80 km
                              
-            	Q1d(i,k)=355.0
+        			Q1d(i,k)=600.0	
 
-    		elseif((z(i,k)<=3480000.0) .and. (z(i,k)>=1221000.0)) then
+        		!- LVZ
+        	
+        		elseif ((z(i,k)<=6291000.0) .and. (z(i,k)>=6151000.0)) then	! 80-220 km
+        	
+        			Q1d(i,k)=80.0	
 
-            	Q1d(i,k)=0.0
+            !- Transition zone
 
-        	else
+        		elseif((z(i,k)<=6151000.0) .and. (z(i,k)>=5971000.0)) then	! 220-400 km
 
-            	Q1d(i,k)=104.0
+					Q1d(i,k)=143.0	
 
-        	endif
+				elseif((z(i,k)<=5971000.0) .and. (z(i,k)>=5771000.0)) then	! 400-600 km
 
-		enddo
+            		Q1d(i,k)=143.0	
+
+        		elseif((z(i,k)<=5771000.0) .and. (z(i,k)>=5701000.0)) then	! 600-670 km
+
+            		Q1d(i,k)=143.0		
+
+        		!- Lower mantle
+
+        		elseif((z(i,k)<=5701000.0) .and. (z(i,k)>=5600000.0)) then	! 670-771 km
+
+        			Q1d(i,k)=312.0	
+
+          		elseif((z(i,k)<=5600000.0) .and. (z(i,k)>=3630000.0)) then	! 771-2741 km
+
+               		Q1d(i,k)=312.0	
+
+    			elseif((z(i,k)<=3630000.0) .and. (z(i,k)>=3480000.0)) then	! 2741-2756 km
+
+             		Q1d(i,k)=312.0	
+
+        		!- Outer core
+
+        		elseif((z(i,k)<=3480000.0) .and. (z(i,k)>=1221500.0)) then
+
+        			Q1d(i,k)=100000.0	
+        			
+        		!- Inner core
+
+        		elseif(z(i,k)<=1221500.0) then
+
+            		Q1d(i,k)=84.6	
+
+        		endif
+			
+			enddo
 		enddo
 		
 	else
@@ -176,24 +212,12 @@ include 'mpif.h'
 	endif
 
 	!============================================================================
-	! modification of the crustal layer
+	! translate to 3D arrays
 	!============================================================================
-
-	if (z(0,0)==6371000.0) then
-
-		! surface
-
-		rho1d(0,:)=3.00
-		cp1d(0,:)=7.20
-		cs1d(0,:)=4.10
-
-	endif
 
 	rho1d=1000.0*rho1d
 	cp1d=1000.0*cp1d
 	cs1d=1000.0*cs1d
-
-    !- translate to 3D arrays
 
 	do i=0,nz_loc
     	do k=0,lpd
@@ -220,4 +244,4 @@ include 'mpif.h'
 	deallocate(Q1d)
 	deallocate(r)
                   
-end subroutine eumod_bg
+end subroutine prem_iso

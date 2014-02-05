@@ -1,6 +1,6 @@
 !=============================================================================
-! model generation for ses3d
-! last modified: 18 September 2012 by Andreas Fichtner
+! Model generation for ses3d.
+! Last modified: 5 February 2014 by Andreas Fichtner
 !=============================================================================
 
 program generate_models
@@ -69,10 +69,10 @@ include 'mpif.h'
 		write(99,*) 'model type: ', model_type
 
 		x_min=x_min*pi/180
-                x_max=x_max*pi/180
+    	x_max=x_max*pi/180
 
-                y_min=y_min*pi/180
-                y_max=y_max*pi/180
+    	y_min=y_min*pi/180
+    	y_max=y_max*pi/180
 
 		!- computational setup, parallelisation ----------------------
 
@@ -118,7 +118,7 @@ include 'mpif.h'
 	call MPI_BCAST(py,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
 	call MPI_BCAST(pz,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
 
-        !======================================================================
+	!======================================================================
 	! determine collocation points (knots)
 	!======================================================================
 
@@ -301,20 +301,20 @@ include 'mpif.h'
 
 	endif
 
-        !======================================================================
-        ! make coordinates and write coordinate files
-        !======================================================================
+	!======================================================================
+	! make coordinates and write coordinate files
+	!======================================================================
 
-        write(99,*) '- indices ----------------------'
-        write(99,*) nx_loc, ny_loc, nz_loc
-        write(99,*) '- phys. model dimensions -------'
-        write(99,*) x_min_loc*180/pi, x_max_loc*180/pi
-        write(99,*) y_min_loc*180/pi, y_max_loc*180/pi
-        write(99,*) z_min_loc, z_max_loc
+	write(99,*) '- indices ----------------------'
+	write(99,*) nx_loc, ny_loc, nz_loc
+	write(99,*) '- phys. model dimensions -------'
+	write(99,*) x_min_loc*180/pi, x_max_loc*180/pi
+	write(99,*) y_min_loc*180/pi, y_max_loc*180/pi
+	write(99,*) z_min_loc, z_max_loc
 
-        allocate(x(0:nx_loc,0:lpd))
-        allocate(y(0:ny_loc,0:lpd))
-        allocate(z(0:nz_loc,0:lpd))
+	allocate(x(0:nx_loc,0:lpd))
+	allocate(y(0:ny_loc,0:lpd))
+	allocate(z(0:nz_loc,0:lpd))
 
 	allocate(XX(0:nx_loc,0:ny_loc,0:nz_loc,0:lpd,0:lpd,0:lpd))
 	allocate(YY(0:nx_loc,0:ny_loc,0:nz_loc,0:lpd,0:lpd,0:lpd))
@@ -324,7 +324,7 @@ include 'mpif.h'
 	open(unit=102,file='../../DATA/COORDINATES/yco_'//mrc(1:len_trim(mrc)),status='unknown')
 	open(unit=103,file='../../DATA/COORDINATES/zco_'//mrc(1:len_trim(mrc)),status='unknown')
 
-        do i=0,nx_loc
+	do i=0,nx_loc
 		do n=0,lpd
 			x(i,n)=x_min_loc+i*dx+0.5*(1+knots(n))*dx
 			XX(i,:,:,n,:,:)=x_min_loc+i*dx+0.5*(1+knots(n))*dx
@@ -367,87 +367,86 @@ include 'mpif.h'
 	allocate(C(0:nx_loc,0:ny_loc,0:nz_loc,0:lpd,0:lpd,0:lpd))
 	allocate(Q(0:nx_loc,0:ny_loc,0:nz_loc,0:lpd,0:lpd,0:lpd))
 
-        allocate(rho(0:nx_loc,0:ny_loc,0:nz_loc,0:lpd,0:lpd,0:lpd))
-        allocate(cs(0:nx_loc,0:ny_loc,0:nz_loc,0:lpd,0:lpd,0:lpd))
-        allocate(cp(0:nx_loc,0:ny_loc,0:nz_loc,0:lpd,0:lpd,0:lpd))
+    allocate(rho(0:nx_loc,0:ny_loc,0:nz_loc,0:lpd,0:lpd,0:lpd))
+	allocate(cs(0:nx_loc,0:ny_loc,0:nz_loc,0:lpd,0:lpd,0:lpd))
+	allocate(cp(0:nx_loc,0:ny_loc,0:nz_loc,0:lpd,0:lpd,0:lpd))
 
+	!=============================================================
+	! implement various 1D Earth models
+	!=============================================================
 
-		!=============================================================
-		! homogeneous model
-		!=============================================================
+	!- homogeneous model -----------------------------------------
 
-		if (model_type==1) then
+	if (model_type==1) then
+		
+		call homogeneous
+		
+	!- isotropic version of prem ---------------------------------
+	
+	elseif (model_type==2) then
+	
+		call prem_iso
+	
+	!- EUROPEAN BACKGROUND MODEL ---------------------------------
 
-                       call homogeneous
+    elseif (model_type==4) then
 
-		endif
+    	call eumod_bg
 
-                !=============================================================
-                ! EUROPEAN BACKGROUND MODEL
-                !=============================================================
+	!- AK135 -----------------------------------------------------
 
-                if (model_type==4) then
+	elseif (model_type==7) then
 
-                        call eumod_bg
+		call ak135
 
-                endif
-
-		!=============================================================
-		! AK135
-		!=============================================================
-
-		if (model_type==7) then
-
-                    call ak135
-
-                endif
+	endif
 
 	!======================================================================
 	! save to files
 	!======================================================================
 
-		!==============================================================
-		! open files, unformatted
-		!==============================================================
+	!==============================================================
+	! open files, unformatted
+	!==============================================================
 
-		call int2str(my_rank,mrc)
+	call int2str(my_rank,mrc)
 
-		open(unit=11,file='../MODELS/rhoinv'//mrc(1:len_trim(mrc)),action='write',form='unformatted')
-		open(unit=12,file='../MODELS/mu'//mrc(1:len_trim(mrc)),action='write',form='unformatted')
-		open(unit=13,file='../MODELS/lambda'//mrc(1:len_trim(mrc)),action='write',form='unformatted')
-		open(unit=14,file='../MODELS/A'//mrc(1:len_trim(mrc)),action='write',form='unformatted')
-		open(unit=15,file='../MODELS/B'//mrc(1:len_trim(mrc)),action='write',form='unformatted')
-		open(unit=16,file='../MODELS/C'//mrc(1:len_trim(mrc)),action='write',form='unformatted')
+	open(unit=11,file='../MODELS/rhoinv'//mrc(1:len_trim(mrc)),action='write',form='unformatted')
+	open(unit=12,file='../MODELS/mu'//mrc(1:len_trim(mrc)),action='write',form='unformatted')
+	open(unit=13,file='../MODELS/lambda'//mrc(1:len_trim(mrc)),action='write',form='unformatted')
+	open(unit=14,file='../MODELS/A'//mrc(1:len_trim(mrc)),action='write',form='unformatted')
+	open(unit=15,file='../MODELS/B'//mrc(1:len_trim(mrc)),action='write',form='unformatted')
+	open(unit=16,file='../MODELS/C'//mrc(1:len_trim(mrc)),action='write',form='unformatted')
 
-		if (is_diss==1) then
-			open(unit=17,file='../MODELS/Q'//mrc(1:len_trim(mrc)),action='write',form='unformatted')
-		endif
+	if (is_diss==1) then	
+		open(unit=17,file='../MODELS/Q'//mrc(1:len_trim(mrc)),action='write',form='unformatted')
+	endif
 
-		!==============================================================
-		! write parameters to files, formatted or unformatted
-		!==============================================================
+	!==============================================================
+	! write parameters to files, formatted or unformatted
+	!==============================================================
 
-		write(11) rhoinv(:,:,:,:,:,:)
-		write(12) mu(:,:,:,:,:,:)
-		write(13) lambda(:,:,:,:,:,:)
-		write(14) A(:,:,:,:,:,:)
-		write(15) B(:,:,:,:,:,:)
-		write(16) C(:,:,:,:,:,:)
+	write(11) rhoinv(:,:,:,:,:,:)
+	write(12) mu(:,:,:,:,:,:)
+	write(13) lambda(:,:,:,:,:,:)
+	write(14) A(:,:,:,:,:,:)
+	write(15) B(:,:,:,:,:,:)
+	write(16) C(:,:,:,:,:,:)
 
-		if (is_diss==1) then
-			write(17) Q(:,:,:,:,:,:)
-		endif
+	if (is_diss==1) then
+		write(17) Q(:,:,:,:,:,:)
+	endif
 
-		close(unit=11)
-		close(unit=12)
-		close(unit=13)
-		close(unit=14)
-		close(unit=15)
-		close(unit=16)
+	close(unit=11)
+	close(unit=12)
+	close(unit=13)
+	close(unit=14)
+	close(unit=15)
+	close(unit=16)
 
-		if (is_diss==1) then
-			close(unit=17)
-		endif
+	if (is_diss==1) then
+		close(unit=17)
+	endif
 
 	!======================================================================
 	! make a profile
@@ -507,16 +506,16 @@ include 'mpif.h'
 
 	deallocate(Q)
 
-        deallocate(rho)
-        deallocate(cp)
-        deallocate(cs)
+    deallocate(rho)
+    deallocate(cp)
+    deallocate(cs)
 
 	deallocate(min_index)
 	deallocate(max_index)
 
-        deallocate(x)
-        deallocate(y)
-        deallocate(z)
+    deallocate(x)
+    deallocate(y)
+    deallocate(z)
 
 	deallocate(XX)
 	deallocate(YY)
