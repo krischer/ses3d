@@ -1,6 +1,6 @@
 !================================================================================
 != add 3D variations to existing Earth model
-!= last modified on 18 September 2012 by Andreas Fichtner
+!= last modified on 5 February 2014 by Andreas Fichtner
 !================================================================================
 
 program ses3d_add_perturbation
@@ -165,7 +165,7 @@ include 'mpif.h'
 	call mpi_bcast(pz,1,mpi_integer,0,mpi_comm_world,ierr)
 
 	!-----------------------------------------------------------------------
-	! read Par_1 file, only process 0, and send to others
+	! read setup file, only process 0, and send to others
 	!-----------------------------------------------------------------------
 
 	if (my_rank==0) then
@@ -408,7 +408,7 @@ include 'mpif.h'
 	  d_beta_sh=1000*d_beta_sh		! convert from km/s to m/s
 	  d_beta_sv=1000*d_beta_sv		! convert from km/s to m/s
 	  d_alpha=1000*d_alpha			! convert from km/s to m/s
-	  d_rho=1000*d_rho                      ! convert from g/cm^3 to kg/m^3
+	  d_rho=1000*d_rho              ! convert from g/cm^3 to kg/m^3
 
 	  !- add perturbation to the current model -----------------------------
 
@@ -508,7 +508,7 @@ include 'mpif.h'
 	!- write new model to files
 	!-----------------------------------------------------------------------
 
-	rhoinv(0:nx,0:ny,0:nz,0:lpd,0:lpd,0:lpd)=1/rho(0:nx,0:ny,0:nz,0:lpd,0:lpd,0:lpd)
+	rhoinv=1/rho
 
 	open(unit=11,file='../MODELS/rhoinv'//string_rank(1:len_trim(string_rank)),action='write',form='unformatted')
 	open(unit=12,file='../MODELS/mu'//string_rank(1:len_trim(string_rank)),action='write',form='unformatted')
