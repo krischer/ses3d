@@ -238,7 +238,7 @@ class ses3d_fields(object):
 				with open(filename3, "rb") as open_file:
 					field3 = np.ndarray(shape, buffer=open_file.read()[4:-4], dtype="float32", order="F")
 
-				field = np.sqrt((field1 + 2 * field2) * rhoinv)
+				field = np.sqrt((field1 + 2 * field2) * field3)
 
 			#- vsh
 			if component == "vsh":
