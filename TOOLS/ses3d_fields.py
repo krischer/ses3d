@@ -54,6 +54,29 @@ class ses3d_fields(object):
 		self.setup = self.read_setup()
 		self.make_coordinates()
 
+		#- Read station locations, if available. --------------------------------------------------
+		if os.path.exists('../INPUT/recfile_1'):
+
+			self.stations = True
+
+			f = open('../INPUT/recfile_1')
+
+			self.n_stations = int(f.readline())
+			self.stnames = []
+			self.stlats = []
+			self.stlons = []
+			
+			for n in range(self.n_stations):
+				self.stnames.append(f.readline().strip())
+				dummy = f.readline().strip().split(' ')
+				self.stlats.append(90.0-float(dummy[0]))
+				self.stlons.append(float(dummy[1]))
+
+			f.close()
+
+		else:
+			self.stations = False
+
 	#==============================================================================================
 	#- Read the setup file.
 	#==============================================================================================
@@ -338,23 +361,33 @@ class ses3d_fields(object):
 				vmax = max(vmax, field[:,:,idz].max())
 				vmin = min(vmin, field[:,:,idz].min())
 
-				#- Make lats and lons. --------------------------------------------------------------------
+				#- Make lats and lons. ------------------------------------------------------------
 				lats = 90.0 - self.theta[p,:] * 180.0 / np.pi
 				lons = self.phi[p,:] * 180.0 / np.pi
 				lon, lat = np.meshgrid(lons, lats)
 
-				#- Make a nice colourmap. -----------------------------------------------------------------
+				#- Make a nice colourmap. ---------------------------------------------------------
 				my_colormap=cm.make_colormap({0.0:[0.1,0.0,0.0], 0.2:[0.8,0.0,0.0], 0.3:[1.0,0.7,0.0],0.48:[0.92,0.92,0.92], 0.5:[0.92,0.92,0.92], 0.52:[0.92,0.92,0.92], 0.7:[0.0,0.6,0.7], 0.8:[0.0,0.0,0.8], 1.0:[0.0,0.0,0.1]})
 
 				x, y = m(lon, lat)
 				im = m.pcolormesh(x, y, field[:,:,idz], cmap=my_colormap, vmin=valmin,vmax=valmax)
 
-		#- Add colobar and title. ---------------------------------------------------------
+		#- Add colobar and title. ------------------------------------------------------------------
 		cb = m.colorbar(im, "right", size="3%", pad='2%')
 		if component in UNIT_DICT:
 			cb.set_label(UNIT_DICT[component], fontsize="x-large", rotation=0)
 	
 		plt.suptitle("Depth slice of %s at %i km" % (component, int(self.z[p,idz]/1000.0)), size="large")
+
+		#- Plot stations if available. ------------------------------------------------------------
+		if self.stations == True:
+
+			x,y = m(self.stlons,self.stlats)
+
+			for n in range(self.n_stations):
+				plt.text(x[n],y[n],self.stnames[n][:4])
+				plt.plot(x[n],y[n],'ro')
+
 
 		plt.show()
 
