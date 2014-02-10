@@ -43,6 +43,14 @@ class ses3d_model(object):
     """
 
     self.nsubvol=0
+    self.lat_min=0.0
+    self.lat_max=0.0
+    self.lon_min=0.0
+    self.lon_max=0.0
+    self.lat_centre=0.0
+    self.lon_centre=0.0
+    self.global_regional="global"
+
     self.m=[]
 
     #- read rotation parameters
@@ -64,7 +72,17 @@ class ses3d_model(object):
     """
 
     res=ses3d_model()
+
     res.nsubvol=self.nsubvol
+    res.lat_min=self.lat_min
+    res.lat_max=self.lat_max
+    res.lon_min=self.lon_min
+    res.lon_max=self.lon_max
+    res.lat_centre=self.lat_centre
+    res.lon_centre=self.lon_centre
+    res.phi=self.phi
+    res.n=self.n
+    res.global_regional=self.global_regional
 
     for k in np.arange(self.nsubvol):
 
@@ -88,7 +106,17 @@ class ses3d_model(object):
     """
 
     res=ses3d_model()
+
     res.nsubvol=self.nsubvol
+    res.lat_min=self.lat_min
+    res.lat_max=self.lat_max
+    res.lon_min=self.lon_min
+    res.lon_max=self.lon_max
+    res.lat_centre=self.lat_centre
+    res.lon_centre=self.lon_centre
+    res.phi=self.phi
+    res.n=self.n
+    res.global_regional=self.global_regional
 
     for k in np.arange(self.nsubvol):
 
