@@ -10,25 +10,6 @@ import rotation as rot
 #- parameters for plotting
 #########################################################################
 
-global_regional='regional'	#- set to 'global' or 'regional'
-
-#- parameters for regional Mercator projection
-if global_regional=='regional':
-
-  lat_min=32.0
-  lat_max=45.0
-  d_lat=5.0
-
-  lon_min=20.0
-  lon_max=45.0
-  d_lon=5.0
-
-#- parameters for global orthographic projection
-elif global_regional=='global':
-
-  lat_centre=50.0
-  lon_centre=20.0
-
 res='i'   # c, l, i, h f
 
 #########################################################################
@@ -199,6 +180,35 @@ class ses3d_model(object):
       self.m[k].v=v[(idx+1):(idx+1+n)].reshape(nx,ny,nz)
 
       idx=idx+n+1
+
+    #- decide on global or regional model==================================
+
+    self.lat_min=90.0
+    self.lat_max=-90.0
+    self.lon_min=180.0
+    self.lon_max=-180.0
+
+    for k in np.arange(self.nsubvol):
+      if np.min(self.m[k].lat) < self.lat_min: self.lat_min = np.min(self.m[k].lat)
+      if np.max(self.m[k].lat) > self.lat_max: self.lat_max = np.max(self.m[k].lat)
+      if np.min(self.m[k].lon) < self.lon_min: self.lon_min = np.min(self.m[k].lon)
+      if np.max(self.m[k].lon) > self.lon_max: self.lon_max = np.max(self.m[k].lon)
+
+    if ((self.lat_max-self.lat_min) > 30.0 or (self.lon_max-self.lon_min) > 30.0):
+      self.global_regional = "global"
+
+      self.lat_centre = (self.lat_max+self.lat_min)/2.0
+      self.lon_centre = (self.lon_max+self.lon_min)/2.0
+
+      self.lat_centre,self.lon_centre = rot.rotate_coordinates(self.n,-self.phi,90.0-self.lat_centre,self.lon_centre)
+      self.lat_centre = 90.0-self.lat_centre
+
+    else:
+      self.global_regional = "regional"
+
+      self.d_lat=5.0
+      self.d_lon=5.0
+
 
   #########################################################################
   #- write a 3D model to a file
@@ -436,12 +446,12 @@ class ses3d_model(object):
 
     #- set up a map and colourmap
 
-    if global_regional=='regional':
-      m=Basemap(projection='merc',llcrnrlat=lat_min,urcrnrlat=lat_max,llcrnrlon=lon_min,urcrnrlon=lon_max,lat_ts=20,resolution=res)
-      m.drawparallels(np.arange(lat_min,lat_max,d_lon),labels=[1,0,0,1])
-      m.drawmeridians(np.arange(lon_min,lon_max,d_lat),labels=[1,0,0,1])
-    elif global_regional=='global':
-      m=Basemap(projection='ortho',lon_0=lon_centre,lat_0=lat_centre,resolution=res)
+    if self.global_regional=='regional':
+      m=Basemap(projection='merc',llcrnrlat=self.lat_min,urcrnrlat=self.lat_max,llcrnrlon=self.lon_min,urcrnrlon=self.lon_max,lat_ts=20,resolution=res)
+      m.drawparallels(np.arange(self.lat_min,self.lat_max,self.d_lon),labels=[1,0,0,1])
+      m.drawmeridians(np.arange(self.lon_min,self.lon_max,self.d_lat),labels=[1,0,0,1])
+    elif self.global_regional=='global':
+      m=Basemap(projection='ortho',lon_0=self.lon_centre,lat_0=self.lat_centre,resolution=res)
       m.drawparallels(np.arange(-80.0,80.0,10.0),labels=[1,0,0,1])
       m.drawmeridians(np.arange(-170.0,170.0,10.0),labels=[1,0,0,1])
 
@@ -519,12 +529,12 @@ class ses3d_model(object):
 
     #- set up a map and colourmap
 
-    if global_regional=='regional':
-      m=Basemap(projection='merc',llcrnrlat=lat_min,urcrnrlat=lat_max,llcrnrlon=lon_min,urcrnrlon=lon_max,lat_ts=20,resolution=res)
-      m.drawparallels(np.arange(lat_min,lat_max,d_lon),labels=[1,0,0,1])
-      m.drawmeridians(np.arange(lon_min,lon_max,d_lat),labels=[1,0,0,1])
-    elif global_regional=='global':
-      m=Basemap(projection='ortho',lon_0=lon_centre,lat_0=lat_centre,resolution=res)
+    if self.global_regional=='regional':
+      m=Basemap(projection='merc',llcrnrlat=self.lat_min,urcrnrlat=self.lat_max,llcrnrlon=self.lon_min,urcrnrlon=self.lon_max,lat_ts=20,resolution=res)
+      m.drawparallels(np.arange(self.lat_min,self.lat_max,self.d_lon),labels=[1,0,0,1])
+      m.drawmeridians(np.arange(self.lon_min,self.lon_max,self.d_lat),labels=[1,0,0,1])
+    elif self.global_regional=='global':
+      m=Basemap(projection='ortho',lon_0=self.lon_centre,lat_0=self.lat_centre,resolution=res)
       m.drawparallels(np.arange(-80.0,80.0,10.0),labels=[1,0,0,1])
       m.drawmeridians(np.arange(-170.0,170.0,10.0),labels=[1,0,0,1])
 
