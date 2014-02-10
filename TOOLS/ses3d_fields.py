@@ -1,6 +1,7 @@
 import os
 import re
 import glob
+import rotation as rot
 import numpy as np
 import colormaps as cm
 
@@ -53,6 +54,15 @@ class ses3d_fields(object):
 
 		self.setup = self.read_setup()
 		self.make_coordinates()
+
+		#- Read rotation parameters. --------------------------------------------------------------
+		fid = open('rotation_parameters.txt','r')
+		fid.readline()
+		self.rotangle = float(fid.readline().strip())
+		fid.readline()
+		line = fid.readline().strip().split(' ')
+		self.n = np.array([float(line[0]),float(line[1]),float(line[2])])
+		fid.close()
 
 		#- Read station locations, if available. --------------------------------------------------
 		if os.path.exists('../INPUT/recfile_1'):
@@ -324,12 +334,18 @@ class ses3d_fields(object):
 		lon_min = self.setup["domain"]["phi_min"]*180.0/np.pi
 		lon_max = self.setup["domain"]["phi_max"]*180.0/np.pi
 
+		if self.rotangle != 0.0:
+			lat_centre = (lat_max+lat_min)/2.0
+			lon_centre = (lon_max+lon_min)/2.0
+			lat_centre,lon_centre = rot.rotate_coordinates(self.n,-self.rotangle,90.0-lat_centre,lon_centre)
+			lat_centre = 90.0-lat_centre
+
 		d_lon = np.round((lon_max-lon_min)/10.0)
 		d_lat = np.round((lat_max-lat_min)/10.0)
 
 		#- Set up the map. ------------------------------------------------------------------------
 		if (lat_max-lat_min) > 30.0:
-			m = Basemap(projection='ortho', lon_0=(lon_max+lon_min)/2.0, lat_0=(lat_max+lat_min)/2.0, resolution=res)
+			m = Basemap(projection='ortho', lon_0=lon_centre, lat_0=lat_centre, resolution=res)
 			m.drawparallels(np.arange(-80.0,80.0,10.0),labels=[1,0,0,1])
 			m.drawmeridians(np.arange(-170.0,170.0,10.0),labels=[1,0,0,1])	
 		else:
@@ -365,6 +381,21 @@ class ses3d_fields(object):
 				lats = 90.0 - self.theta[p,:] * 180.0 / np.pi
 				lons = self.phi[p,:] * 180.0 / np.pi
 				lon, lat = np.meshgrid(lons, lats)
+
+				#- Rotate if necessary. -----------------------------------------------------------
+				if self.rotangle != 0.0:
+
+					lat_rot = np.zeros(np.shape(lon),dtype=float)
+					lon_rot = np.zeros(np.shape(lat),dtype=float)
+
+					for idlon in np.arange(len(lons)):
+						for idlat in np.arange(len(lats)):
+
+							lat_rot[idlat,idlon],lon_rot[idlat,idlon] = rot.rotate_coordinates(self.n,-self.rotangle,90.0-lat[idlat,idlon],lon[idlat,idlon])
+							lat_rot[idlat,idlon] = 90.0-lat_rot[idlat,idlon]
+
+					lon = lon_rot
+					lat = lat_rot
 
 				#- Make a nice colourmap. ---------------------------------------------------------
 				my_colormap=cm.make_colormap({0.0:[0.1,0.0,0.0], 0.2:[0.8,0.0,0.0], 0.3:[1.0,0.7,0.0],0.48:[0.92,0.92,0.92], 0.5:[0.92,0.92,0.92], 0.52:[0.92,0.92,0.92], 0.7:[0.0,0.6,0.7], 0.8:[0.0,0.0,0.8], 1.0:[0.0,0.0,0.1]})
