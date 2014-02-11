@@ -1,4 +1,4 @@
-subroutine homogeneous
+subroutine homogeneous_plus_Q
 use variables_gm
 implicit none
 include 'mpif.h'
@@ -87,4 +87,4 @@ include 'mpif.h'
     	enddo
 	enddo
 		
-end subroutine homogeneous
+end subroutine homogeneous_plus_Q

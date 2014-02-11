@@ -389,7 +389,7 @@ include 'mpif.h'
 		
 	!- homogeneous model plus QL6 Q ------------------------------
 
-	if (model_type==3) then
+	elseif (model_type==3) then
 		
 		call homogeneous_plus_Q
 	
