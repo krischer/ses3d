@@ -1,5 +1,5 @@
 # model files
-MODEL_FILES="../MODELS_1D/homogeneous.f90 ../MODELS_1D/eumod_bg.f90 ../MODELS_1D/ak135.f90"
+MODEL_FILES="../MODELS_1D/homogeneous.f90 ../MODELS_1D/eumod_bg.f90 ../MODELS_1D/ak135.f90 ../MODELS_1D/homogeneous_plus_Q.f90"
 
 mpif90 -O3 -w modules_gm.f90  $MODEL_FILES generate_models.f90 -o ../MAIN/generate_models.exe
 mpif90 -O3 -w ../../SOURCE/ses3d_modules.f90 add_perturbation.f90 -o ../MAIN/add_perturbation.exe

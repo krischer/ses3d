@@ -386,6 +386,12 @@ include 'mpif.h'
 	elseif (model_type==2) then
 	
 		call prem_iso
+		
+	!- homogeneous model plus QL6 Q ------------------------------
+
+	if (model_type==3) then
+		
+		call homogeneous_plus_Q
 	
 	!- EUROPEAN BACKGROUND MODEL ---------------------------------
 
