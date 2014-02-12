@@ -1,12 +1,12 @@
 MODEL =====================================================================================================================================
-45.0                          				! theta_min (colatitude) in degrees 
-115.0                 				        ! theta_max (colatitude) in degrees
--120.0                    				! phi_min (longitude) in degrees
--0.0                                                     ! phi_max (longitude) in degrees
+45.2                          				! theta_min (colatitude) in degrees 
+114.8                 				        ! theta_max (colatitude) in degrees
+-119.8                    				! phi_min (longitude) in degrees
+-0.2                                                    ! phi_max (longitude) in degrees
 4931000.0                           		        ! z_min (radius) in m
 6371000.0                 				! z_max (radius) in m
 1							! is_diss
-1							! model_type
+3							! model_type
 COMPUTATIONAL SETUP (PARALLELISATION) =====================================================================================================
 36                                    			! nx_global, (nx_global+px = global # elements in theta direction)
 60                                    			! ny_global, (ny_global+py = global # elements in phi direction)
