@@ -63,23 +63,23 @@ include 'mpif.h'
        	do i=0,lpd
            do q=0,lpd
 
-           	dummy_3=2*dl(q,i)/dz
-              	dummy_2=2*dl(q,i)/dy
-              	dummy_1=2*dl(q,i)/dx
+           	dummy_3=2.0*dl(q,i)/dz
+            	dummy_2=2.0*dl(q,i)/dy
+            	dummy_1=2.0*dl(q,i)/dx
 
-	      	!----------------------------------------------------------------
+		!----------------------------------------------------------------
 	      	!- velocity field -----------------------------------------------
 	      	!----------------------------------------------------------------
 
-              	ezz(:,:,:,:,:,i)=ezz(:,:,:,:,:,i)+vz(:,:,:,:,:,q)*dummy_3		! (grad v)_(r r)
-              	ezy(:,:,:,:,:,i)=ezy(:,:,:,:,:,i)+vy(:,:,:,:,:,q)*dummy_3		! (grad v)_(r phi)
-              	ezx(:,:,:,:,:,i)=ezx(:,:,:,:,:,i)+vx(:,:,:,:,:,q)*dummy_3		! (grad v)_(r theta)
+            	ezz(:,:,:,:,:,i)=ezz(:,:,:,:,:,i)+vz(:,:,:,:,:,q)*dummy_3		! (grad v)_(r r)
+            	ezy(:,:,:,:,:,i)=ezy(:,:,:,:,:,i)+vy(:,:,:,:,:,q)*dummy_3		! (grad v)_(r phi)
+            	ezx(:,:,:,:,:,i)=ezx(:,:,:,:,:,i)+vx(:,:,:,:,:,q)*dummy_3		! (grad v)_(r theta)
 
-              	eyy(:,:,:,:,i,:)=eyy(:,:,:,:,i,:)+vy(:,:,:,:,q,:)*dummy_2		! (grad v)_(phi phi)
+            	eyy(:,:,:,:,i,:)=eyy(:,:,:,:,i,:)+vy(:,:,:,:,q,:)*dummy_2		! (grad v)_(phi phi)
 	      	eyx(:,:,:,:,i,:)=eyx(:,:,:,:,i,:)+vx(:,:,:,:,q,:)*dummy_2		! (grad v)_(phi theta)
 	      	eyz(:,:,:,:,i,:)=eyz(:,:,:,:,i,:)+vz(:,:,:,:,q,:)*dummy_2		! (grad v)_(phi r)
 
-              	exx(:,:,:,i,:,:)=exx(:,:,:,i,:,:)+vx(:,:,:,q,:,:)*dummy_1		! (grad v)_(theta theta)
+            	exx(:,:,:,i,:,:)=exx(:,:,:,i,:,:)+vx(:,:,:,q,:,:)*dummy_1		! (grad v)_(theta theta)
 	      	exy(:,:,:,i,:,:)=exy(:,:,:,i,:,:)+vy(:,:,:,q,:,:)*dummy_1		! (grad v)_(theta phi)
 	      	exz(:,:,:,i,:,:)=exz(:,:,:,i,:,:)+vz(:,:,:,q,:,:)*dummy_1		! (grad v)_(theta r)
 
@@ -133,9 +133,9 @@ include 'mpif.h'
         eyz=eyz+(prof_x+prof_z)*dyuz*ispml
         ezy=ezy+(prof_x+prof_y)*dzuy*ispml
 
-	exy=(exy+eyx)/2
-	exz=(exz+ezx)/2
-	eyz=(eyz+ezy)/2
+	exy=(exy+eyx)/2.0
+	exz=(exz+ezx)/2.0
+	eyz=(eyz+ezy)/2.0
 
 	!======================================================================
 	! make strong form stress rates
@@ -159,10 +159,10 @@ include 'mpif.h'
 
            	M_dummy=Mdx+Mdy+Mdz
 
-           	L=(kappa-2*mu_tau/3)*(exx+eyy+ezz)-2*mu*M_dummy/3
-              	sxx=L+2*mu_tau*exx+2*mu*Mdx+C*ezz+A*(eyy+exx)
-              	syy=L+2*mu_tau*eyy+2*mu*Mdy+C*ezz+A*(eyy+exx)
-              	szz=L+2*mu_tau*ezz+2*mu*Mdz+C*(eyy+exx)
+           	L=(kappa-2.0*mu_tau/3.0)*(exx+eyy+ezz)-2.0*mu*tau*M_dummy/3.0
+              	sxx=L+2.0*mu_tau*exx+2.0*mu*tau*Mdx+C*ezz+A*(eyy+exx)
+              	syy=L+2.0*mu_tau*eyy+2.0*mu*tau*Mdy+C*ezz+A*(eyy+exx)
+              	szz=L+2.0*mu_tau*ezz+2.0*mu*tau*Mdz+C*(eyy+exx)
 
         else			!- dissipation off
 
@@ -189,15 +189,15 @@ include 'mpif.h'
 
            	enddo
 
-              	sxy=2*mu_tau*exy+2*mu*Mdx
-              	sxz=2*mu_tau*exz+2*mu*Mdy+2*B*exz
-              	syz=2*mu_tau*eyz+2*mu*Mdz+2*B*eyz
+              	sxy=2.0*mu_tau*exy+2.0*mu*tau*Mdx
+              	sxz=2.0*mu_tau*exz+2.0*mu*tau*Mdy+2.0*B*exz
+              	syz=2.0*mu_tau*eyz+2.0*mu*tau*Mdz+2.0*B*eyz
 
         else				!- dissipation off
 
-              	sxy=2*mu*exy
-              	sxz=2*mu*exz+2*B*exz
-              	syz=2*mu*eyz+2*B*eyz
+              	sxy=2.0*mu*exy
+              	sxz=2.0*mu*exz+2.0*B*exz
+              	syz=2.0*mu*eyz+2.0*B*eyz
 
         endif
 
@@ -335,7 +335,7 @@ include 'mpif.h'
 
            do k=1,nrdiss
 
-              L=dt*tau*D_p(k)/tau_p(k)
+              L=dt*D_p(k)/tau_p(k)
 
               Mxx(k,:,:,:,:,:,:)=Mxx(k,:,:,:,:,:,:)-dt*Mxx(k,:,:,:,:,:,:)/tau_p(k) &
                                 -L(:,:,:,:,:,:)*exx(:,:,:,:,:,:)
