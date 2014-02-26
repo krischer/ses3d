@@ -5,6 +5,13 @@ import obspy.signal.filter as flt
 
 def make_stf(dt=0.13, nt=4000, fmin=1.0/100.0, fmax=1.0/8.0, filename='../INPUT/stf_new', plot=True):
 
+	"""
+	Generate a source time function for ses3d.
+
+	make_stf(dt=0.13, nt=4000, fmin=1.0/100.0, fmax=1.0/8.0, filename='../INPUT/stf_new', plot=True)
+
+	"""
+
 	#- Make time axis and original Heaviside function. --------------------------------------------
 
 	t = np.arange(0.0,float(nt+1)*dt,dt)
