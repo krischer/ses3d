@@ -12,19 +12,19 @@ include 'mpif.h'
 	! variables
 	!======================================================================
 
-    character(len=15) :: junk
+    	character(len=200) :: junk
 
 	integer :: pp, dummy
-    integer :: status(MPI_STATUS_SIZE)
-    integer :: nx_min_loc, nx_max_loc
-    integer :: ny_min_loc, ny_max_loc
-    integer :: nz_min_loc, nz_max_loc
-    integer :: ix_multi_loc, iy_multi_loc, iz_multi_loc
-    integer :: i, k
+    	integer :: status(MPI_STATUS_SIZE)
+    	integer :: nx_min_loc, nx_max_loc
+    	integer :: ny_min_loc, ny_max_loc
+    	integer :: nz_min_loc, nz_max_loc
+    	integer :: ix_multi_loc, iy_multi_loc, iz_multi_loc
+    	integer :: i, k
 
-    real :: xmin_loc, xmax_loc
-    real :: ymin_loc, ymax_loc
-    real :: zmin_loc, zmax_loc
+    	real :: xmin_loc, xmax_loc
+    	real :: ymin_loc, ymax_loc
+    	real :: zmin_loc, zmax_loc
 
 	!======================================================================
 	! read box file, only process 0, and send to other processes
@@ -228,10 +228,10 @@ include 'mpif.h'
 		write(99,*) '- output directory -----------------------------------------'
 		read(15,*)junk
 		read(15, '(A1000)')ofd
-        ofd = trim(ofd)//'/'
+        	ofd = trim(ofd)//'/'
 		write(99,*) 'output field directory: ', ofd
-        !- Create the directory if it does not exist.
-        call system('mkdir -p '//ofd)
+        	!- Create the directory if it does not exist.
+        	call system('mkdir -p '//ofd)
 
 		!- output flags ----------------------------------------------
 
@@ -303,8 +303,8 @@ include 'mpif.h'
 		read(15, '(A1000)') ffd
 		ffd=trim(ffd)//'/'//trim(event_indices(i_events))//'/'
 		write(99,*) 'forward field directory: ', ffd
-        !- Create the directory if it does not exist.
-        call system('mkdir -p '//ffd)
+        	!- Create the directory if it does not exist.
+        	call system('mkdir -p '//ffd)
 
 		write(99,*) '------------------------------------------------------------'
 
@@ -364,12 +364,12 @@ include 'mpif.h'
 	call mpi_bcast(zzs, 1, mpi_real, 0, mpi_comm_world, ierr)
 	call mpi_bcast(source_type, 1, mpi_integer, 0, mpi_comm_world, ierr)
 
-    call mpi_bcast(MOM_xx, 1, mpi_real, 0, mpi_comm_world, ierr)
-    call mpi_bcast(MOM_yy, 1, mpi_real, 0, mpi_comm_world, ierr)
-    call mpi_bcast(MOM_zz, 1, mpi_real, 0, mpi_comm_world, ierr)
-    call mpi_bcast(MOM_xy, 1, mpi_real, 0, mpi_comm_world, ierr)
-    call mpi_bcast(MOM_xz, 1, mpi_real, 0, mpi_comm_world, ierr)
-    call mpi_bcast(MOM_yz, 1, mpi_real, 0, mpi_comm_world, ierr)
+    	call mpi_bcast(MOM_xx, 1, mpi_real, 0, mpi_comm_world, ierr)
+    	call mpi_bcast(MOM_yy, 1, mpi_real, 0, mpi_comm_world, ierr)
+    	call mpi_bcast(MOM_zz, 1, mpi_real, 0, mpi_comm_world, ierr)
+    	call mpi_bcast(MOM_xy, 1, mpi_real, 0, mpi_comm_world, ierr)
+    	call mpi_bcast(MOM_xz, 1, mpi_real, 0, mpi_comm_world, ierr)
+    	call mpi_bcast(MOM_yz, 1, mpi_real, 0, mpi_comm_world, ierr)
 
 	call mpi_bcast(xmin_global, 1, mpi_real, 0, mpi_comm_world, ierr)
 	call mpi_bcast(xmax_global, 1, mpi_real, 0, mpi_comm_world, ierr)
@@ -398,7 +398,7 @@ include 'mpif.h'
 
 	if ((adjoint_flag==0) .or. (adjoint_flag==1)) then
 
-		if ((xmin .le. xxs) .and. (xmax .ge. xxs) .AND. &
+		if ((xmin .le. xxs) .and. (xmax .ge. xxs) .and. &
 		    (ymin .le. yys) .and. (ymax .ge. yys) .and. &
 		    (zmin .le. zmax_global-zzs) .and. (zmax .ge. zmax_global-zzs)) then
 
@@ -407,6 +407,15 @@ include 'mpif.h'
 			is_source=1.0
 
 			open(unit=15,file='../INPUT/stf',status='old',action='read')
+
+			!- Read header.
+
+			read(15,*) junk
+			read(15,*) junk
+			read(15,*) junk
+			read(15,*) junk
+
+			!- Read samples.
 
 			do i=1, nt, 1
 				read(15,*) so(i)
