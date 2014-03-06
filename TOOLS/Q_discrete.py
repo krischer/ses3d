@@ -20,8 +20,8 @@ import numpy.random as rd
 Q_0=np.array([50.0, 100.0, 500.0])
 
 #- minimum and maximum frequencies for optimisation in Hz
-f_min=1.0/100.0
-f_max=1.0/10.0
+f_min=1.0/50.0
+f_max=1.0/5.0
 
 #- number of relaxation mechanisms
 N=3
@@ -32,7 +32,7 @@ T_0=0.2
 d=0.9998
 
 #- reference frequency in Hz (f_ref) and exponent (alpha) for frequency-dependent Q
-f_ref=1.0/50.0
+f_ref=1.0/20.0
 alpha=0.2
 
 #--------------------------------------------------------------------------------------------------

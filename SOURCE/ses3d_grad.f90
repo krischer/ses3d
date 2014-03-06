@@ -1,7 +1,7 @@
 !*****************************************************************************
 ! computation of Frechet kernels *********************************************
 !*****************************************************************************
-! last modified: 1 April 2010 by Andreas Fichtner
+! last modified: 8 March 2013 by Andreas Fichtner
 !*****************************************************************************
 
 subroutine ses3d_grad
@@ -10,8 +10,16 @@ use variables
 implicit none
 include 'mpif.h'
 
-        !======================================================================
-	! The sensitivity densities assume that all measurements are made on velocity fields !!!
+
+	!======================================================================
+	!- Local variables
+	!======================================================================
+
+	integer :: k
+	real, dimension(1:nrdiss,0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: M_dummy
+
+	!======================================================================
+	!- Compute kernels by integrating on the fly.
 	!======================================================================
 
         if (saving_vector(nt+1-it)>0) then
@@ -37,21 +45,67 @@ include 'mpif.h'
 		call ses3d_restore(eyz_fw,'eyz',it,4,2026)
 
 		!==============================================================
-        	! compute Frechet kernels
-        	!==============================================================
+		!- Preliminaries.==============================================
+		!==============================================================
 
-		div_u_fw=exx_fw+eyy_fw+ezz_fw
-		div_u_rw=dxux+dyuy+dzuz
+		!- Adjoint strain tensor.
 
-		e_ddot_e=dxux*exx_fw+dyuy*eyy_fw+dzuz*ezz_fw+(dxuy+dyux)*exy_fw+(dxuz+dzux)*exz_fw+(dyuz+dzuy)*eyz_fw
+		exx_ad=dxux
+		eyy_ad=dyuy
+		ezz_ad=dzuz
 
-                grad_cp=grad_cp+samp_ad*dt*(2*rho*cp*div_u_fw*div_u_rw)/Jac
+		exy_ad=0.5*(dxuy+dyux)
+		exz_ad=0.5*(dxuz+dzux)
+		eyz_ad=0.5*(dyuz+dzuy)
+
+		!- Traces of forward and adjoint strain tensor.
+		
+		tr_e_ad=exx_ad+eyy_ad+ezz_ad
+		tr_e_fw=exx_fw+eyy_fw+ezz_fw
+
+		!- Scalar product of forward and adjoint strain tensor.
+		
+		e_ddot_e=exx_ad*exx_fw+eyy_ad*eyy_fw+ezz_ad*ezz_fw+2.0*exy_ad*exy_fw+2.0*exz_ad*exz_fw+2.0*eyz_ad*eyz_fw
+
+
+		!==============================================================
+		!- Frechet kernels for elastic parameters. ====================
+		!==============================================================		
+
+                grad_cp=grad_cp+samp_ad*dt*(2.0*rho*cp*tr_e_fw*tr_e_ad)/Jac
 
                 grad_rho=grad_rho+samp_ad*dt*(vx_fw*vx+vy_fw*vy+vz_fw*vz)/Jac
-		grad_rho=grad_rho+samp_ad*dt*((cp*cp-2*cs*cs)*div_u_fw*div_u_rw+2*cs*cs*e_ddot_e)/Jac
+		grad_rho=grad_rho+samp_ad*dt*((cp*cp-2.0*cs*cs)*tr_e_fw*tr_e_ad+2.0*cs*cs*e_ddot_e)/Jac
 
-		grad_csh=grad_csh+samp_ad*dt*(4*rho*cs*(e_ddot_e-div_u_rw*div_u_fw-exz_fw*(dxuz+dzux)-eyz_fw*(dyuz+dzuy)))/Jac
-		grad_csv=grad_csv+samp_ad*dt*(4*rho*cs*(exz_fw*(dxuz+dzux)+eyz_fw*(dyuz+dzuy)))/Jac
+		grad_csh=grad_csh+samp_ad*dt*(4.0*rho*cs*(e_ddot_e-tr_e_ad*tr_e_fw-2.0*exz_fw*exz_ad-2.0*eyz_fw*eyz_ad))/Jac
+		grad_csv=grad_csv+samp_ad*dt*(8.0*rho*cs*(exz_fw*exz_ad+eyz_fw*eyz_ad))/Jac
+
+
+		!==============================================================
+		!- Frechet kernels for visco-elastic parameters. ==============
+		!==============================================================
+
+		if (is_diss==1) then
+
+			!- Shear Q ============================================
+
+			do k=1,nrdiss
+
+				M_dummy(k,:,:,:,:,:,:)=Mxx(k,:,:,:,:,:,:)*exx_fw(:,:,:,:,:,:)+Myy(k,:,:,:,:,:,:)*eyy_fw(:,:,:,:,:,:)+Mzz(k,:,:,:,:,:,:)*ezz_fw(:,:,:,:,:,:) &
+						      +Mxy(k,:,:,:,:,:,:)*exy_fw(:,:,:,:,:,:)+Mxz(k,:,:,:,:,:,:)*exz_fw(:,:,:,:,:,:)+Myz(k,:,:,:,:,:,:)*eyz_fw(:,:,:,:,:,:) &
+						      -tr_e_fw(:,:,:,:,:,:)*(Mxx(k,:,:,:,:,:,:)+Myy(k,:,:,:,:,:,:)+Mzz(k,:,:,:,:,:,:))/3.0
+
+			enddo
+
+			do k=1,nrdiss
+
+				grad_Q_mu(:,:,:,:,:,:)=grad_Q_mu(k,:,:,:,:,:,:)+samp_ad*dt*M_dummy(k,:,:,:,:,:,:)*tau_p(k)/Jac
+
+			enddo
+			
+			!- Bulk Q =============================================
+
+		endif		
 
         endif
 

@@ -219,11 +219,16 @@ implicit none
 	real, dimension(1:maxnr,1:maxnt) :: ad_stf_x, ad_stf_y, ad_stf_z
 
 	real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: grad_rho, grad_cp, grad_csh, grad_csv
+	real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: grad_Q_mu, grad_Q_kappa, grad_alpha_mu, grad_alpha_kappa
+
 	real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: vx_fw, vy_fw, vz_fw
 	real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: exx_fw, eyy_fw, ezz_fw
 	real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: exy_fw, exz_fw, eyz_fw
 
-	real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: div_u_fw, div_u_rw, e_ddot_e
+	real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: exx_ad, eyy_ad, ezz_ad
+	real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: exy_ad, exz_ad, eyz_ad
+
+	real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: tr_e_fw, tr_e_ad, e_ddot_e
 
 end module variables
 !==============================================================================

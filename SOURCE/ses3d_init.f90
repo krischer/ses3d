@@ -82,6 +82,7 @@ include 'mpif.h'
 	src_xz=0.0; src_zx=0.0; src_yz=0.0; src_zy=0.0
 
 	grad_rho=0.0; 	grad_cp=0.0; 	grad_csh=0.0; 	grad_csv=0.0
+	grad_Q_mu=0.0;	grad_Q_kappa=0.0;  grad_alpha_mu=0.0;  grad_alpha_kappa=0.0 
 
 	!======================================================================
 	! determine collocation points (knots) and integration weights
