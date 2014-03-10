@@ -490,7 +490,7 @@ include 'mpif.h'
 		read(21) QQ(0:nx,0:ny,0:nz,0:lpd,0:lpd,0:lpd)
 		close(unit=21)
 
-		tau=2/(pi*QQ)
+		tau=1.0/QQ
 
 	endif
 

@@ -197,7 +197,7 @@ implicit none
 
 	character(len=5) :: comp
 	character(len=10) :: int2str
-	character(len=60) :: junk, fn, cit
+	character(len=60) :: junk, fn
 	character(len=140) :: fn_grad, fn_output
 
 	integer :: nx_min_loc, nx_max_loc
@@ -220,8 +220,10 @@ implicit none
 	integer :: nbx, nby, nbz
 	real, allocatable, dimension(:) :: bxco, byco, bzco
 	real, allocatable, dimension(:,:,:) :: gradient_csv, gradient_csh, gradient_cp, gradient_rho
+	real, allocatable, dimension(:,:,:) :: gradient_Q_mu, gradient_Q_kappa, gradient_alpha_mu, gradient_alpha_kappa
 
 	real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: u_csv, u_csh, u_cp, u_rho
+	real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: u_Q_mu, u_Q_kappa, u_alpha_mu, u_alpha_kappa
 
 	!-0-==========================================================================
 	! initialisations
@@ -284,8 +286,8 @@ implicit none
 	! read external input
 	!=============================================================================
 
-	write(*,*) 'iteration: '
-	read(*,*) it
+	write(*,*) 'project visco-elastic kernels (0=no, 1=yes): '
+	read(*,*) is_diss
 
 	write(*,*) 'directory for sensitivity densities: '
 	read(*,*) fn_grad
@@ -295,16 +297,11 @@ implicit none
 	read(*,*) fn_output
 	write(*,*) 'confirm directory: ', fn_output
 
-	cit=int2str(it)
-
 	!-0-==========================================================================
 	! open gradient file and read header block coordinates
 	!=============================================================================
 
-	open(unit=120,file=fn_output(1:len_trim(fn_output))//'gradient_csh',action='write')
-	open(unit=130,file=fn_output(1:len_trim(fn_output))//'gradient_csv',action='write')
-	open(unit=140,file=fn_output(1:len_trim(fn_output))//'gradient_cp',action='write')
-	open(unit=150,file=fn_output(1:len_trim(fn_output))//'gradient_rho',action='write')
+	!- Read block files. =========================================================
 
 	open(unit=71,file='../MODELS/MODELS_3D/block_x',status='old',action='read')
 	open(unit=72,file='../MODELS/MODELS_3D/block_y',status='old',action='read')
@@ -314,10 +311,33 @@ implicit none
 	read(72,*) nsubvol
 	read(73,*) nsubvol
 
+	!- Kernels for elastic parameters. ===========================================
+
+	open(unit=120,file=fn_output(1:len_trim(fn_output))//'gradient_csh',action='write')
+	open(unit=130,file=fn_output(1:len_trim(fn_output))//'gradient_csv',action='write')
+	open(unit=140,file=fn_output(1:len_trim(fn_output))//'gradient_cp',action='write')
+	open(unit=150,file=fn_output(1:len_trim(fn_output))//'gradient_rho',action='write')
+
 	write(120,*) nsubvol
 	write(130,*) nsubvol
 	write(140,*) nsubvol
 	write(150,*) nsubvol
+
+	!- Kernels for visco-elastic parameters. =====================================
+
+	if (is_diss==1) then
+
+		open(unit=160,file=fn_output(1:len_trim(fn_output))//'gradient_Q_mu',action='write')
+		open(unit=170,file=fn_output(1:len_trim(fn_output))//'gradient_Q_kappa',action='write')
+		open(unit=180,file=fn_output(1:len_trim(fn_output))//'gradient_alpha_mu',action='write')
+		open(unit=190,file=fn_output(1:len_trim(fn_output))//'gradient_alpha_kappa',action='write')
+
+		write(160,*) nsubvol
+		write(170,*) nsubvol
+		write(180,*) nsubvol
+		write(190,*) nsubvol
+
+	endif
 
 	!-0-==========================================================================
 	! loop over subvolumes
@@ -338,14 +358,28 @@ implicit none
 		allocate(gradient_cp(1:nbx-1,1:nby-1,1:nbz-1))
 		allocate(gradient_rho(1:nbx-1,1:nby-1,1:nbz-1))
 
-		allocate(bxco(1:nbx))
-		allocate(byco(1:nby))
-		allocate(bzco(1:nbz))
-
 		gradient_csh(:,:,:)=0.0
 		gradient_csv(:,:,:)=0.0
 		gradient_cp(:,:,:)=0.0
 		gradient_rho(:,:,:)=0.0
+
+		if (is_diss==1) then
+
+			allocate(gradient_Q_mu(1:nbx-1,1:nby-1,1:nbz-1))
+			allocate(gradient_Q_kappa(1:nbx-1,1:nby-1,1:nbz-1))
+			allocate(gradient_alpha_mu(1:nbx-1,1:nby-1,1:nbz-1))
+			allocate(gradient_alpha_kappa(1:nbx-1,1:nby-1,1:nbz-1))
+
+			gradient_Q_mu(:,:,:)=0.0
+			gradient_Q_kappa(:,:,:)=0.0
+			gradient_alpha_mu(:,:,:)=0.0
+			gradient_alpha_kappa(:,:,:)=0.0
+
+		endif
+
+		allocate(bxco(1:nbx))
+		allocate(byco(1:nby))
+		allocate(bzco(1:nbz))
 
 		do i=1,nbx
 			read(71,*) bxco(i)
@@ -451,44 +485,88 @@ implicit none
 		      enddo
 
 		      !-2-============================================================
-		      ! load sensitivity kernels
+		      ! load sensitivity kernels for elastic parameters
 		      !===============================================================
 
-		      !- csv
+		      !- csv =========================================================
 
-		      fn=fn_grad(1:len_trim(fn_grad))//'grad_csv_'//junk(1:len_trim(junk))//'_'//cit(1:len_trim(cit))
+		      fn=fn_grad(1:len_trim(fn_grad))//'grad_csv_'//junk(1:len_trim(junk))
 
 		      write(*,*) 'open file ', fn
 		      open(unit=10,file=fn,action='read',form='unformatted')
 		      read(10) u_csv
 		      close(unit=10)
 
-		      !- csh
+		      !- csh =========================================================
 
-		      fn=fn_grad(1:len_trim(fn_grad))//'grad_csh_'//junk(1:len_trim(junk))//'_'//cit(1:len_trim(cit))
+		      fn=fn_grad(1:len_trim(fn_grad))//'grad_csh_'//junk(1:len_trim(junk))
 
 		      write(*,*) 'open file ', fn
 		      open(unit=10,file=fn,action='read',form='unformatted')
 		      read(10) u_csh
 		      close(unit=10)
 
-		      !- cp
+		      !- cp ==========================================================
 
-		      fn=fn_grad(1:len_trim(fn_grad))//'grad_cp_'//junk(1:len_trim(junk))//'_'//cit(1:len_trim(cit))
+		      fn=fn_grad(1:len_trim(fn_grad))//'grad_cp_'//junk(1:len_trim(junk))
 
 		      write(*,*) 'open file ', fn
 		      open(unit=10,file=fn,action='read',form='unformatted')
 		      read(10) u_cp
 		      close(unit=10)
 
-		      !- rho
+		      !- rho =========================================================
 
-		      fn=fn_grad(1:len_trim(fn_grad))//'grad_rho_'//junk(1:len_trim(junk))//'_'//cit(1:len_trim(cit))
+		      fn=fn_grad(1:len_trim(fn_grad))//'grad_rho_'//junk(1:len_trim(junk))
 
 		      write(*,*) 'open file ', fn
 		      open(unit=10,file=fn,action='read',form='unformatted')
 		      read(10) u_rho
 		      close(unit=10)
+
+		      !-2-============================================================
+		      ! load sensitivity kernels for visco-elastic parameters
+		      !===============================================================
+
+		      if (is_diss==1) then
+
+			!- Q_mu ========================================================
+
+		      	fn=fn_grad(1:len_trim(fn_grad))//'grad_Q_mu_'//junk(1:len_trim(junk))
+
+		      	write(*,*) 'open file ', fn
+		      	open(unit=10,file=fn,action='read',form='unformatted')
+		      	read(10) u_Q_mu
+		      	close(unit=10)
+
+			!- Q_kappa =====================================================
+
+		      	fn=fn_grad(1:len_trim(fn_grad))//'grad_Q_kappa_'//junk(1:len_trim(junk))
+
+		      	write(*,*) 'open file ', fn
+		      	open(unit=10,file=fn,action='read',form='unformatted')
+		      	read(10) u_Q_kappa
+		      	close(unit=10)
+
+			!- alpha_mu ====================================================
+
+		      	fn=fn_grad(1:len_trim(fn_grad))//'grad_alpha_mu_'//junk(1:len_trim(junk))
+
+		      	write(*,*) 'open file ', fn
+		      	open(unit=10,file=fn,action='read',form='unformatted')
+		      	read(10) u_alpha_mu
+		      	close(unit=10)
+
+			!- alpha_kappa =================================================
+
+		      	fn=fn_grad(1:len_trim(fn_grad))//'grad_alpha_kappa_'//junk(1:len_trim(junk))
+
+		      	write(*,*) 'open file ', fn
+		      	open(unit=10,file=fn,action='read',form='unformatted')
+		      	read(10) u_alpha_kappa
+		      	close(unit=10)
+
+		      endif
 
 		      !-2-============================================================
 		      ! loop over individual blocks
@@ -636,6 +714,15 @@ implicit none
 				  gradient_cp(indx,indy,indz)=gradient_cp(indx,indy,indz)+u_cp(i,j,k,l,m,n)*intx*inty*intz/(dbx*dby*dbz)
 				  gradient_rho(indx,indy,indz)=gradient_rho(indx,indy,indz)+u_rho(i,j,k,l,m,n)*intx*inty*intz/(dbx*dby*dbz)
 
+				  if (is_diss==1) then
+
+					gradient_Q_mu(indx,indy,indz)=gradient_Q_mu(indx,indy,indz)+u_Q_mu(i,j,k,l,m,n)*intx*inty*intz/(dbx*dby*dbz)
+				  	gradient_Q_kappa(indx,indy,indz)=gradient_Q_kappa(indx,indy,indz)+u_Q_kappa(i,j,k,l,m,n)*intx*inty*intz/(dbx*dby*dbz)
+				  	gradient_alpha_mu(indx,indy,indz)=gradient_alpha_mu(indx,indy,indz)+u_alpha_mu(i,j,k,l,m,n)*intx*inty*intz/(dbx*dby*dbz)
+				  	gradient_alpha_kappa(indx,indy,indz)=gradient_alpha_kappa(indx,indy,indz)+u_alpha_kappa(i,j,k,l,m,n)*intx*inty*intz/(dbx*dby*dbz)
+
+				  endif
+
 				enddo
 				enddo
 				enddo
@@ -655,7 +742,7 @@ implicit none
 		close(unit=15)	! close boxfile
 
 		!-1-==================================================================
-		! write output
+		! write output for elastic kernels
 		!=====================================================================
 
 		write(120,*) (nbx-1)*(nby-1)*(nbz-1)
@@ -677,6 +764,32 @@ implicit none
 		enddo
 
 		!-1-==================================================================
+		! write output for visco-elastic kernels
+		!=====================================================================
+
+		if (is_diss==1) then
+
+			write(160,*) (nbx-1)*(nby-1)*(nbz-1)
+			write(170,*) (nbx-1)*(nby-1)*(nbz-1)
+			write(180,*) (nbx-1)*(nby-1)*(nbz-1)
+			write(190,*) (nbx-1)*(nby-1)*(nbz-1)
+
+			do i=1,nbx-1
+			do j=1,nby-1
+			do k=1,nbz-1
+
+		  	write(160,*) gradient_Q_mu(i,j,k)
+		  	write(170,*) gradient_Q_kappa(i,j,k)
+		  	write(180,*) gradient_alpha_mu(i,j,k)
+		  	write(190,*) gradient_alpha_kappa(i,j,k)
+
+			enddo
+			enddo
+			enddo
+
+		endif
+
+		!-1-==================================================================
 		! clean up
 		!=====================================================================
 
@@ -684,6 +797,15 @@ implicit none
 		deallocate(gradient_csv)
 		deallocate(gradient_cp)
 		deallocate(gradient_rho)
+
+		if (is_diss==1) then
+
+			deallocate(gradient_Q_mu)
+			deallocate(gradient_Q_kappa)
+			deallocate(gradient_alpha_mu)
+			deallocate(gradient_alpha_kappa)
+
+		endif
 
 		deallocate(bxco)
 		deallocate(byco)

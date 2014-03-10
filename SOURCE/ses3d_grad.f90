@@ -17,6 +17,21 @@ include 'mpif.h'
 
 	integer :: k
 	real, dimension(1:nrdiss,0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: M_dummy
+	
+	!- These are the derivatives of the weights D with respect to alpha. They are hardcoded here, and may need to be changed.
+
+	real, dimension(1:nrdiss) :: dPdalpha
+	real :: alpha, Q_kappa
+
+	dPdalpha(1)=-3.06
+	dPdalpha(2)=-1.54
+	dPdalpha(3)=2.56
+
+	!- Also, alpha and Q_kappa are hardcoded right now. 
+	
+	alpha=0.3
+
+	Q_kappa=57823.0
 
 	!======================================================================
 	!- Compute kernels by integrating on the fly.
@@ -70,7 +85,9 @@ include 'mpif.h'
 
 		!==============================================================
 		!- Frechet kernels for elastic parameters. ====================
-		!==============================================================		
+		!==============================================================	
+		!- These are kernels for *absolute* perturbations. ============
+		!==============================================================	
 
                 grad_cp=grad_cp+samp_ad*dt*(2.0*rho*cp*tr_e_fw*tr_e_ad)/Jac
 
@@ -83,6 +100,8 @@ include 'mpif.h'
 
 		!==============================================================
 		!- Frechet kernels for visco-elastic parameters. ==============
+		!==============================================================
+		!- These are kernels for *relative* perturbations. ============
 		!==============================================================
 
 		if (is_diss==1) then
@@ -99,14 +118,39 @@ include 'mpif.h'
 
 			do k=1,nrdiss
 
-				grad_Q_mu(:,:,:,:,:,:)=grad_Q_mu(k,:,:,:,:,:,:)+samp_ad*dt*M_dummy(k,:,:,:,:,:,:)*tau_p(k)/Jac
+				grad_Q_mu(:,:,:,:,:,:)=grad_Q_mu(:,:,:,:,:,:)+samp_ad*dt*M_dummy(k,:,:,:,:,:,:)*tau_p(k)/Jac
+				grad_alpha_mu(:,:,:,:,:,:)=grad_alpha_mu(:,:,:,:,:,:)+samp_ad*dt*M_dummy(k,:,:,:,:,:,:)*dPdalpha(k)*tau_p(k)/(D_p(k)*Jac)
 
 			enddo
-			
+
 			!- Bulk Q =============================================
+
+			do k=1,nrdiss
+
+				M_dummy(k,:,:,:,:,:,:)=(Mxx(k,:,:,:,:,:,:)+Myy(k,:,:,:,:,:,:)+Mzz(k,:,:,:,:,:,:))*tr_e_fw
+
+			enddo
+
+			do k=1,nrdiss
+
+				grad_Q_kappa(:,:,:,:,:,:)=grad_Q_kappa(:,:,:,:,:,:)+samp_ad*dt*M_dummy(k,:,:,:,:,:,:)*tau_p(k)/Jac
+				grad_alpha_kappa(:,:,:,:,:,:)=grad_alpha_kappa(:,:,:,:,:,:)+samp_ad*dt*M_dummy(k,:,:,:,:,:,:)*dPdalpha(k)*tau_p(k)/(D_p(k)*Jac)
+
+			enddo
 
 		endif		
 
         endif
+
+	!- Normalisations =====================================================
+
+	if (it==nt) then
+
+		grad_Q_mu=2.0*mu*grad_Q_mu/QQ
+		grad_alpha_mu=-2.0*alpha*mu*grad_alpha_mu/QQ
+		grad_Q_kappa=kappa*grad_Q_kappa/Q_kappa
+		grad_alpha_mu=-alpha*kappa*grad_alpha_kappa/Q_kappa
+
+	endif
 
 end subroutine ses3d_grad

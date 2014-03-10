@@ -361,11 +361,11 @@ class adjoint_source:
     taper[N_0+N-len(h):N_0+N]=h
 
     if verbose==True:
-	plt.plot(self.s.t,taper)
-	plt.grid(True)
-	plt.xlabel('time [s]')
-	plt.title('cosine taper')
-	plt.show()
+      plt.plot(self.s.t,taper)
+      plt.grid(True)
+      plt.xlabel('time [s]')
+      plt.title('cosine taper')
+      plt.show()
 
     d=d*taper
 
@@ -373,8 +373,9 @@ class adjoint_source:
 
     adsrc=np.zeros(self.s.nt,dtype=float)
 
-    d=np.cumsum(d)*self.s.dt
-    adsrc=-d/(np.sum(d*d)*self.s.dt)
+    normalisation=np.sum(d*d)*self.s.dt
+
+    adsrc=2.0*d/normalisation
 
     #- differentiate adjoint source time function for measurements on velocity seismograms
     #- The previous development assumes displacement seismograms
@@ -437,11 +438,11 @@ class adjoint_source:
     taper[N_0+N-len(h):N_0+N]=h
 
     if verbose==True:
-	plt.plot(self.s.t,taper)
-	plt.grid(True)
-	plt.xlabel('time [s]')
-	plt.title('cosine taper')
-	plt.show()
+      plt.plot(self.s.t,taper)
+      plt.grid(True)
+      plt.xlabel('time [s]')
+      plt.title('cosine taper')
+      plt.show()
 
     d=d*taper
 
@@ -449,7 +450,10 @@ class adjoint_source:
 
     adsrc=np.zeros(self.s.nt,dtype=float)
 
-    adsrc=d/(np.sum(d*d)*self.s.dt)
+    d[0:len(d)-1]=np.diff(d)/self.s.dt
+    d[len(d)-1]=0.0
+
+    adsrc=-d/(sum(d*d)*self.s.dt)
 
     #- differentiate adjoint source time function for measurements on velocity seismograms
     #- The previous development assumes displacement seismograms
