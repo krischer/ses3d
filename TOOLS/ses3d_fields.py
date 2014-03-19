@@ -34,7 +34,7 @@ class ses3d_fields(object):
 		__init__(self, directory, field_type="earth_model")
 
 		Initiate the ses3d_fields class. Read available components. Admissible field_type's currently
-		are "earth_model" and "velocity_snapshot".
+		are "earth_model", "velocity_snapshot", and "kernel".
 		"""
 
 		self.directory = directory
@@ -50,6 +50,12 @@ class ses3d_fields(object):
 		if field_type == "velocity_snapshot":
 
 			self.pure_components = ["vx", "vy", "vz"]
+			self.components = {}
+
+		#- Read available kernels. ----------------------------------------------------------------
+		if field_type == "kernel":
+
+			self.pure_components = ["Q_mu", "Q_kappa", "alpha_mu", "alpha_kappa"]
 			self.components = {}
 
 		self.setup = self.read_setup()
@@ -228,9 +234,13 @@ class ses3d_fields(object):
 		if self.field_type == "earth_model":
 			filename = os.path.join(self.directory, component+str(proc_number))
 
-		#-Velocity field snapshots. ---------------------------------------------------------------
+		#- Velocity field snapshots. --------------------------------------------------------------
 		elif self.field_type == "velocity_snapshot":
 			filename = os.path.join(self.directory, component+"_"+str(proc_number)+"_"+str(iteration))
+
+		#- Sensitivity kernels. -------------------------------------------------------------------
+		elif self.field_type == "kernel":
+			filename = os.path.join(self.directory, "grad_"+component+"_"+str(proc_number))
 
 		return filename
 
@@ -309,9 +319,9 @@ class ses3d_fields(object):
 	#==============================================================================================
 	#- Plot depth slice.
 	#==============================================================================================
-	def plot_depth_slice(self, component, depth, valmin, valmax, iteration=0, verbose=True, res="i"):
+	def plot_depth_slice(self, component, depth, valmin, valmax, iteration=0, verbose=True, stations=True, res="i"):
 		"""
-		plot_depth_slice(self, component, depth, valmin, valmax, iteration=0, verbose=True, res="i")
+		plot_depth_slice(self, component, depth, valmin, valmax, iteration=0, verbose=True, stations=True, res="i")
 
 		Plot depth slices of field component at depth "depth" with colourbar ranging between "valmin" and "valmax".
 		The resolution of the coastline is "res" (c, l, i, h, f).
@@ -319,6 +329,7 @@ class ses3d_fields(object):
 		The currently available "components" are:
 			Material parameters: A, B, C, mu, lambda, rhoinv, vp, vsh, vsv, rho
 			Velocity field snapshots: vx, vy, vz
+			Sensitivity kernels: Q_mu, Q_kappa, alpha_mu, alpha_kappa
 		"""
 
 
@@ -401,7 +412,7 @@ class ses3d_fields(object):
 				my_colormap=cm.make_colormap({0.0:[0.1,0.0,0.0], 0.2:[0.8,0.0,0.0], 0.3:[1.0,0.7,0.0],0.48:[0.92,0.92,0.92], 0.5:[0.92,0.92,0.92], 0.52:[0.92,0.92,0.92], 0.7:[0.0,0.6,0.7], 0.8:[0.0,0.0,0.8], 1.0:[0.0,0.0,0.1]})
 
 				x, y = m(lon, lat)
-				im = m.pcolormesh(x, y, field[:,:,idz], cmap=my_colormap, vmin=valmin,vmax=valmax)
+				im = m.pcolormesh(x, y, -1.0e9*field[:,:,idz], cmap=my_colormap, vmin=valmin,vmax=valmax)
 
 		#- Add colobar and title. ------------------------------------------------------------------
 		cb = m.colorbar(im, "right", size="3%", pad='2%')
@@ -411,7 +422,7 @@ class ses3d_fields(object):
 		plt.suptitle("Depth slice of %s at %i km" % (component, int(self.z[p,idz]/1000.0)), size="large")
 
 		#- Plot stations if available. ------------------------------------------------------------
-		if self.stations == True:
+		if (self.stations == True) & (stations==True):
 
 			x,y = m(self.stlons,self.stlats)
 
