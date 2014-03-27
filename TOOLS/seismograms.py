@@ -2,6 +2,7 @@
 
 import numpy as np
 import matplotlib.pylab as plt
+import obspy.signal.filter as flt
 
 #########################################################################
 # define seismogram class
@@ -136,3 +137,18 @@ class ses3d_seismogram:
       plt.ylabel(str(scaling)+'*v_r [m/s]')
 
     plt.show()
+
+  #########################################################################
+  # filter
+  #########################################################################
+
+  def bandpass(self,fmin,fmax):
+    """
+    bandpass(fmin,fmax)
+    Apply a zero-phase bandpass to all traces. 
+    """
+
+    self.trace_x=flt.bandpass(self.trace_x,fmin,fmax,1.0/self.dt,corners=2,zerophase=True)
+    self.trace_y=flt.bandpass(self.trace_y,fmin,fmax,1.0/self.dt,corners=2,zerophase=True)
+    self.trace_z=flt.bandpass(self.trace_z,fmin,fmax,1.0/self.dt,corners=2,zerophase=True)
+
