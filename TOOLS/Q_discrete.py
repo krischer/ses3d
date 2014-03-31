@@ -3,37 +3,42 @@ import numpy as np
 import matplotlib.pyplot as plt
 import numpy.random as rd
 
-""" computation and visualisation of a discrete absorption-band model
+""" Computation and visualisation of a discrete absorption-band model.
 
     For a given array of target Q values, the code determines the optimal relaxation
     times and weights. This is done within in specified frequency range.
 
-
-    C_r=1 and rho=1 are assumed. tau is computed from the target Q via 1/Q=0.5*tau*pi.
+    Before running the code, the input parameters may need to be edited.
 """
 
 #--------------------------------------------------------------------------------------------------
 #- input ------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------
 
-#- array of target Q's at the reference frequency (f_ref, specified below)
+#- Array of target Q's at the reference frequency (f_ref, specified below). The code tries to find
+#- optimal relaxation parameters for all given Q_0 values simultaneously.
 Q_0=np.array([50.0, 100.0, 500.0])
 
-#- minimum and maximum frequencies for optimisation in Hz
-f_min=1.0/50.0
-f_max=1.0/5.0
+#- Minimum and maximum frequencies for optimisation in Hz. These values determine the width of the
+#- absorption band.
+f_min=1.0/250.0
+f_max=1.0/80.0
 
-#- number of relaxation mechanisms
+#- Number of relaxation mechanisms. The broader the absorption band, the more mechanisms are needed.
 N=3
 
-#- optimisation parameters (number of iterations, temperature, temperature decrease)
+#- Optimisation parameters (number of iterations, temperature, temperature decrease). The code runs
+#- a simplistic Simulated Annealing optimisation to find optimal relaxation parameters. max_it is 
+#- the maximum number of samples, T_0 the initial random step length, and d is the temperature decrease
+#- in the sense that temperature decreases from one sample to the next by a factor of d.
 max_it=30000
 T_0=0.2
 d=0.9998
 
-#- reference frequency in Hz (f_ref) and exponent (alpha) for frequency-dependent Q
+#- Reference frequency in Hz (f_ref) and exponent (alpha) for frequency-dependent Q. For frequency-
+#- independent Q you must set alpha=0.0.
 f_ref=1.0/20.0
-alpha=0.2
+alpha=0.0
 
 #--------------------------------------------------------------------------------------------------
 #- initialisations --------------------------------------------------------------------------------
