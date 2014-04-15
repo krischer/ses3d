@@ -17,7 +17,7 @@ include 'mpif.h'
 	call MPI_Comm_rank(MPI_COMM_WORLD,my_rank,ierr)
 
 	call int2str(my_rank,mrc)
-	open(unit=99,file='logfile'//junk(1:len_trim(junk)),action='write')
+	open(unit=99,file='logfile'//mrc(1:len_trim(mrc)),action='write')
 
 	!======================================================================
 	! Make sure all required directories are in existance.
@@ -320,15 +320,15 @@ include 'mpif.h'
 	allocate(YY(0:nx_loc,0:ny_loc,0:nz_loc,0:lpd,0:lpd,0:lpd))
 	allocate(ZZ(0:nx_loc,0:ny_loc,0:nz_loc,0:lpd,0:lpd,0:lpd))
 
-	open(unit=101,file='../../DATA/COORDINATES/xco_'//mrc(1:len_trim(mrc)),status='unknown')
-	open(unit=102,file='../../DATA/COORDINATES/yco_'//mrc(1:len_trim(mrc)),status='unknown')
-	open(unit=103,file='../../DATA/COORDINATES/zco_'//mrc(1:len_trim(mrc)),status='unknown')
+	open(unit=1010,file='../../DATA/COORDINATES/xco_'//mrc(1:len_trim(mrc)),status='unknown')
+	open(unit=1020,file='../../DATA/COORDINATES/yco_'//mrc(1:len_trim(mrc)),status='unknown')
+	open(unit=1030,file='../../DATA/COORDINATES/zco_'//mrc(1:len_trim(mrc)),status='unknown')
 
 	do i=0,nx_loc
 		do n=0,lpd
 			x(i,n)=x_min_loc+i*dx+0.5*(1+knots(n))*dx
 			XX(i,:,:,n,:,:)=x_min_loc+i*dx+0.5*(1+knots(n))*dx
-			write(101,*) x(i,n)
+			write(1010,*) x(i,n)
 		enddo
 	enddo
 
@@ -336,7 +336,7 @@ include 'mpif.h'
 		do n=0,lpd
 			y(j,n)=y_min_loc+j*dy+0.5*(1+knots(n))*dy
 			YY(:,j,:,:,n,:)=y_min_loc+j*dy+0.5*(1+knots(n))*dy
-			write(102,*) y(j,n)
+			write(1020,*) y(j,n)
 		enddo
 	enddo
 
@@ -344,13 +344,13 @@ include 'mpif.h'
 		do n=0,lpd
 			z(k,n)=z_max_loc-k*dz-0.5*(1+knots(n))*dz
 			ZZ(:,:,k,:,:,n)=z_max_loc-k*dz-0.5*(1+knots(n))*dz
-			write(103,*) z(k,n)
+			write(1030,*) z(k,n)
 		enddo
 	enddo
 
-	close(unit=101)
-	close(unit=102)
-	close(unit=103)
+	close(unit=1010)
+	close(unit=1020)
+	close(unit=1030)
 
 	XX=XX*180/pi
 	YY=YY*180/pi

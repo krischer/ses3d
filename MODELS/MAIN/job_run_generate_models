@@ -1,10 +1,18 @@
-#!/bin/bash
-#PBS -l nodes=12:ppn=4
+#!/bin/bash -l
+#
+#SBATCH --account=ch1
+#SBATCH --job-name="generate_models"
+#SBATCH --time=00:05:00
+#SBATCH --ntasks=48
+#SBATCH --output=generate_models.%j.o
+#SBATCH --error=generate_models.%j.e
 
-cd /home/fichtner/SES3D_4.0/MODELS/MAIN
-. /usr/local/etc/pathscale.sh
-
-mpirun -n 48 ./generate_models.exe
-
-
-
+#======START=====
+ module load slurm
+ echo "The current job ID is $SLURM_JOB_ID"
+ echo "Running on $SLURM_NNODES nodes"
+ echo "Using $SLURM_NTASKS_PER_NODE tasks per node"
+ echo "A total of $SLURM_NPROCS tasks is used"
+# cd /project/ch1/andreas/ses3d/MODELS/MAIN 
+ aprun -B ./generate_models.exe
+#=====END====

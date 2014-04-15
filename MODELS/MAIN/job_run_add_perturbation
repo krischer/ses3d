@@ -1,10 +1,18 @@
-#!/bin/bash
-#PBS -l nodes=12:ppn=4
+#!/bin/bash -l
+#
+#SBATCH --account=s438
+#SBATCH --job-name="add_perturbation"
+#SBATCH --time=00:15:00
+#SBATCH --ntasks=48
+#SBATCH --output=add_perturbation.%j.o
+#SBATCH --error=add_perturbation.%j.e
 
-cd /home/fichtner/SES3D_4.0/MODELS/MAIN
-. /usr/local/etc/pathscale.sh
-
-mpirun -n 48 ./add_perturbation.exe
-
-
-
+#======START=====
+ module load slurm
+ echo "The current job ID is $SLURM_JOB_ID"
+ echo "Running on $SLURM_NNODES nodes"
+ echo "Using $SLURM_NTASKS_PER_NODE tasks per node"
+ echo "A total of $SLURM_NPROCS tasks is used"
+ cd /project/s438/fichtner/ses3d/MODELS/MAIN 
+ aprun -n $SLURM_NPROCS ./add_perturbation.exe
+#=====END====
