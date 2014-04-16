@@ -206,28 +206,28 @@ include 'mpif.h'
 	write(99,*) 'width of one element in z direction in m: ', dz
 
 	do i=0,nx
-		do n=0,lpd
-			x(i,n)=xmin+i*dx+0.5*(1+knots(n))*dx
-                        sin_theta(i,:,:,n,:,:)=sin(x(i,n))
-                        cot_theta(i,:,:,n,:,:)=cos(x(i,n))/sin(x(i,n))
-                        cos_theta(i,:,:,n,:,:)=cos(x(i,n))
-			write(101,*) x(i,n)
-		enddo
+	do n=0,lpd
+		x(i,n)=xmin+i*dx+0.5*(1+knots(n))*dx
+      	sin_theta(i,:,:,n,:,:)=sin(x(i,n))
+      	cot_theta(i,:,:,n,:,:)=cos(x(i,n))/sin(x(i,n))
+      	cos_theta(i,:,:,n,:,:)=cos(x(i,n))
+		!write(101,*) x(i,n)
+	enddo
 	enddo
 
 	do j=0,ny
-		do n=0,lpd
-			y(j,n)=ymin+j*dy+0.5*(1+knots(n))*dy
-			write(102,*) y(j,n)
-		enddo
+	do n=0,lpd
+		y(j,n)=ymin+j*dy+0.5*(1+knots(n))*dy
+		!write(102,*) y(j,n)
+	enddo
 	enddo
 
 	do k=0,nz
-		do n=0,lpd
-			z(k,n)=zmax-k*dz-0.5*(1+knots(n))*dz
-                        r(:,:,k,:,:,n)=z(k,n)
-			write(103,*) z(k,n)
-		enddo
+	do n=0,lpd
+		z(k,n)=zmax-k*dz-0.5*(1+knots(n))*dz
+    	r(:,:,k,:,:,n)=z(k,n)
+		!write(103,*) z(k,n)
+	enddo
 	enddo
 	
 	!======================================================================
