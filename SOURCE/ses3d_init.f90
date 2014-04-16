@@ -1,7 +1,7 @@
 !==============================================================================
 ! subroutine for the initialisation of space matrices, mass matrix, ...
 !==============================================================================
-! last modified: 1 April 2010 by Andreas Fichtner
+! last modified: 16 April 2014 by Andreas Fichtner
 !==============================================================================
 
 subroutine ses3d_init
@@ -19,19 +19,19 @@ include 'mpif.h'
 
 	integer :: i, j, k, l, m, n, in, jn, kn, idx
 
-    	real :: delta_x, delta_y, delta_z, alpha
+    real :: delta_x, delta_y, delta_z, alpha
 	real :: tol
 
 	!=====================================================================
 
-    	ispml=1.0
-    	tol=pi/(180*100000)                !- receiver location tolerance
+    ispml=1.0
+    tol=pi/(180*100000)                !- receiver location tolerance
 
 	!======================================================================
 
 	call int2str(my_rank, dummy)
 
-    	if (my_rank==0) then
+    if (my_rank==0) then
 
 	    write(*,*)'begin init '
 
@@ -40,11 +40,11 @@ include 'mpif.h'
 	write(99,*)'begin init '
 	write(99,*)'------------------------------------------------------------'
 
-    	!======================================================================
-    	! initialise elastic parameters, memory variables and Frechet derivatives
-    	!======================================================================
+    !======================================================================
+    ! initialise elastic parameters, memory variables and Frechet derivatives
+    !======================================================================
 
-    	kappa=lambda+2*mu/3
+    kappa=lambda+2*mu/3
 	cs=sqrt(mu*rhoinv)
 	cp=sqrt((lambda+2*mu)*rhoinv)
 
@@ -53,12 +53,12 @@ include 'mpif.h'
 		rho=1/rhoinv
 	end where
 
-        if (is_diss==1) then
+  	if (is_diss==1) then
+		
+		mu_tau=(1+sum_D_p*tau)*mu
+        Mxx=0.0; Myy=0.0; Mzz=0.0; Mxy=0.0; Mxz=0.0; Myz=0.0
 
-        	mu_tau=(1+sum_D_p*tau)*mu
-           	Mxx=0.0; Myy=0.0; Mzz=0.0; Mxy=0.0; Mxz=0.0; Myz=0.0
-
-        endif
+ 	endif
 
 	if (adjoint_flag==2) then
 
@@ -229,25 +229,25 @@ include 'mpif.h'
 			write(103,*) z(k,n)
 		enddo
 	enddo
-
+	
 	!======================================================================
 	! initialisation of the JACOBIAN
 	!======================================================================
 
 	Jac=dx*dy*dz/8
 
-        !======================================================================
-        ! initialisation of the global and local mass matrices
-        !======================================================================
+   	!======================================================================
+   	! initialisation of the global and local mass matrices
+   	!======================================================================
 
 	MM_global(:,:,:)=0.0
 
-        do i=0,nx
-        do j=0,ny
-        do k=0,nz
-        do l=0,lpd
-        do m=0,lpd
-        do n=0,lpd
+  	do i=0,nx
+   	do j=0,ny
+	do k=0,nz
+    do l=0,lpd
+    do m=0,lpd
+	do n=0,lpd
 
 		index_x=i*lpd+l	! global index in x-direction
 		index_y=j*lpd+m	! global index in y-direction
@@ -258,35 +258,35 @@ include 'mpif.h'
 
 		MM(i,j,k,l,m,n)=-w(l)*w(m)*w(n)*Jac*z(k,n)*z(k,n)*sin_theta(i,j,k,l,m,n)/rhoinv(i,j,k,l,m,n)
 
-        enddo
-        enddo
-        enddo
-        enddo
-        enddo
-        enddo
+	enddo
+    enddo
+    enddo
+    enddo
+    enddo
+    enddo
 
 	call communicate_global_field(MM_global)
 
-        !=======================================================================
-        ! find receivers located in a particular processor box
-        !=======================================================================
+	!=======================================================================
+   	! find receivers located in a particular processor box
+  	!=======================================================================
 
 	if ((adjoint_flag==0) .or. (adjoint_flag==1)) then
+		
+		nr=0			! number of receivers in this processor box
 
-        	nr=0			! number of receivers in this processor box
-
-        	write(99,*) 'receiver locations in transformed unit system --------------'
+        write(99,*) 'receiver locations in transformed unit system --------------'
 
 
-        	do n=1,nr_global	! find receivers that are located in this processor box
+        do n=1,nr_global	! find receivers that are located in this processor box
 
         	if ((recloc_global(1,n)<=xmax) .and. (recloc_global(1,n)>xmin) .and. &
                	    (recloc_global(2,n)<=ymax) .and. (recloc_global(2,n)>ymin) .and. &
                	    (zmax_global-recloc_global(3,n)<=zmax) .and. (zmax_global-recloc_global(3,n)>zmin)) then
 
                	write(99,*) 'receiver: ', &
-		station_name_global(n),recloc_global(1,n)*180/pi, &
-		recloc_global(2,n)*180/pi,zmax_global-recloc_global(3,n)
+				station_name_global(n),recloc_global(1,n)*180/pi, &
+				recloc_global(2,n)*180/pi,zmax_global-recloc_global(3,n)
 
                	nr=nr+1
 
@@ -315,15 +315,15 @@ include 'mpif.h'
                 	recloc(2,nr)=recloc_global(2,n)
                 	recloc(3,nr)=recloc_global(3,n)
 
-			station_name_local(nr)=station_name_global(n)
+					station_name_local(nr)=station_name_global(n)
 
                 	rx(nr)=i
                 	ry(nr)=j
                 	rz(nr)=k
 
-			write(99,*) nz,k,z(k,:)
+					write(99,*) nz,k,z(k,:)
                 	write(99,*) 'element: (', i,',',j,',',k,')'
-			write(99,*) 'standard coordinates: (', recloc_std(1,nr),',',recloc_std(2,nr),',',recloc_std(3,nr),')'
+					write(99,*) 'standard coordinates: (', recloc_std(1,nr),',',recloc_std(2,nr),',',recloc_std(3,nr),')'
 
                	endif	!- if receiver is in this element
 
@@ -331,21 +331,21 @@ include 'mpif.h'
                 enddo	!- loop over elements
                	enddo	!- loop over elements
 
-            	endif	!- if the receiver is in this processor box
+            endif	!- if the receiver is in this processor box
 
-        	enddo	!- loop over all receivers
+        enddo	!- loop over all receivers
 
 		write(99,*)'------------------------------------------------------------'
-        	write(99,*) 'number of receivers: ', nr
+        write(99,*) 'number of receivers: ', nr
 		write(99,*)'------------------------------------------------------------'
 
-        	seismogram_x(:,:)=0.0
-        	seismogram_y(:,:)=0.0
-        	seismogram_z(:,:)=0.0
+        seismogram_x(:,:)=0.0
+        seismogram_y(:,:)=0.0
+        seismogram_z(:,:)=0.0
 
 	endif
 
-     	!=========================================================================
+    !=========================================================================
 	! point source location
 	!=========================================================================
 
@@ -428,18 +428,18 @@ include 'mpif.h'
 	endif
 
 	!=============================================================================
-        ! make local adjoint source locations and read adjoint source time functions
-        !=============================================================================
+   	! make local adjoint source locations and read adjoint source time functions
+   	!=============================================================================
 
 	if (adjoint_flag==2) then
 
-	  nr_adsrc=0
+	  	nr_adsrc=0
 
-	  write(99,*) '------------------------------------------------------------'
-	  write(99,*) '- adjoint sources ******************************************'
-	  write(99,*) '------------------------------------------------------------'
+	  	write(99,*) '------------------------------------------------------------'
+	  	write(99,*) '- adjoint sources ******************************************'
+	  	write(99,*) '------------------------------------------------------------'
 
-	  do k=1,nr_adsrc_global
+	  	do k=1,nr_adsrc_global
 
 	    !- find adjoint sources in this processor box ----------------------------
 
@@ -447,44 +447,44 @@ include 'mpif.h'
                 (ad_srcloc_global(2,k)<=ymax) .and. (ad_srcloc_global(2,k)>ymin) .and. &
                 (zmax_global-ad_srcloc_global(3,k)<=zmax) .and. (zmax_global-ad_srcloc_global(3,k)>zmin)) then
 
-		nr_adsrc=nr_adsrc+1
+				nr_adsrc=nr_adsrc+1
 
-		ad_srcloc(1,nr_adsrc)=ad_srcloc_global(1,k)
-		ad_srcloc(2,nr_adsrc)=ad_srcloc_global(2,k)
-		ad_srcloc(3,nr_adsrc)=ad_srcloc_global(3,k)
+				ad_srcloc(1,nr_adsrc)=ad_srcloc_global(1,k)
+				ad_srcloc(2,nr_adsrc)=ad_srcloc_global(2,k)
+				ad_srcloc(3,nr_adsrc)=ad_srcloc_global(3,k)
 
-		write(99,*) 'adjoint source ', k, ' (global), adjoint source ', nr_adsrc, ' (local)'
-		write(99,*) 'position (lat,lon,depth): ', ad_srcloc(1,nr_adsrc), ad_srcloc(2,nr_adsrc), ad_srcloc(3,nr_adsrc)
-		write(*,*) 'adjoint source in processor', my_rank
+				write(99,*) 'adjoint source ', k, ' (global), adjoint source ', nr_adsrc, ' (local)'
+				write(99,*) 'position (lat,lon,depth): ', ad_srcloc(1,nr_adsrc), ad_srcloc(2,nr_adsrc), ad_srcloc(3,nr_adsrc)
+				write(*,*) 'adjoint source in processor', my_rank
 
-		call int2str(k,s_idx)
+				call int2str(k,s_idx)
 
-		!- open file containing the adjoint source time function -------------
+				!- open file containing the adjoint source time function -------------
 
-		open(unit=10,file='../ADJOINT/'//trim(event_indices(i_events))//'/ad_src_'//s_idx(1:len_trim(s_idx)),action='read')
+				open(unit=10,file='../ADJOINT/'//trim(event_indices(i_events))//'/ad_src_'//s_idx(1:len_trim(s_idx)),action='read')
 
-		!- read header of the adjoint source file (not used) -----------------
+				!- read header of the adjoint source file (not used) -----------------
 
-		read(10,*) dummy
-		read(10,*) dummy
-		read(10,*) dummy
-		read(10,*) dummy
+				read(10,*) dummy
+				read(10,*) dummy
+				read(10,*) dummy
+				read(10,*) dummy
 
-		!- read adjoint source time function components ----------------------
+				!- read adjoint source time function components ----------------------
 
-		do i=1,nt
+				do i=1,nt
 
-		  read(10,*) ad_stf_x(nr_adsrc,i), ad_stf_y(nr_adsrc,i), ad_stf_z(nr_adsrc,i)
+		  			read(10,*) ad_stf_x(nr_adsrc,i), ad_stf_y(nr_adsrc,i), ad_stf_z(nr_adsrc,i)
+			
+				enddo
 
-              	enddo
+				close(unit=10)
 
-		close(unit=10)
+		endif
 
-	    endif
+	  	enddo
 
-	  enddo
-
-	  write(99,*) '------------------------------------------------------------'
+	  	write(99,*) '------------------------------------------------------------'
 
 	endif
 
@@ -494,22 +494,22 @@ include 'mpif.h'
 
 	if (adjoint_flag==2) then
 
-	  do idx=1,nr_adsrc
+	  	do idx=1,nr_adsrc
 
 	    !- search in x-direction ------------------------------------------
 
 	    delta_x=xmax-xmin
 
 	    do i=0,nx
-            do k=0,lpd
+		do k=0,lpd
+			
+			if (abs(ad_srcloc(1,idx)-x(i,k))<delta_x) then
 
-	      if (abs(ad_srcloc(1,idx)-x(i,k))<delta_x) then
-
-		is(1,idx)=i
+				is(1,idx)=i
                 isn(1,idx)=k
-		delta_x=abs(ad_srcloc(1,idx)-x(i,k))
+				delta_x=abs(ad_srcloc(1,idx)-x(i,k))
 
-              endif
+          	endif
 
 	    enddo
 	    enddo
@@ -521,15 +521,15 @@ include 'mpif.h'
 	    delta_y=ymax-ymin
 
 	    do i=0,ny
-            do k=0,lpd
+		do k=0,lpd
+			
+			if (abs(ad_srcloc(2,idx)-y(i,k))<delta_y) then
 
-	      if (abs(ad_srcloc(2,idx)-y(i,k))<delta_y) then
-
-		is(2,idx)=i
+				is(2,idx)=i
                 isn(2,idx)=k
-    		delta_y=abs(ad_srcloc(2,idx)-y(i,k))
+    			delta_y=abs(ad_srcloc(2,idx)-y(i,k))
 
-	      endif
+	      	endif
 
 	    enddo
 	    enddo
@@ -541,140 +541,138 @@ include 'mpif.h'
 	    delta_z=zmax-zmin
 
 	    do i=0,nz
-            do k=0,lpd
+		do k=0,lpd
 
-	      if (abs(zmax_global-ad_srcloc(3,idx)-z(i,k))<delta_z) then
+	      	if (abs(zmax_global-ad_srcloc(3,idx)-z(i,k))<delta_z) then
 
-		is(3,idx)=i
+				is(3,idx)=i
                 isn(3,idx)=k
-		delta_z=abs(zmax_global-ad_srcloc(3,idx)-z(i,k))
+				delta_z=abs(zmax_global-ad_srcloc(3,idx)-z(i,k))
 
-	      endif
+	      	endif
 
 	    enddo
 	    enddo
 
 	    zzs_ad_loc(idx)=(z(is(3,idx),lpd)+z(is(3,idx),0)-2*(zmax_global-ad_srcloc(3,idx)))/(z(is(3,idx),0)-z(is(3,idx),lpd))
 
-	  enddo
+	  	enddo
 
 	endif
 
-        !======================================================================
-        ! PML damping profiles
-        !======================================================================
+ 	!======================================================================
+    ! PML damping profiles
+    !======================================================================
 
-        alpha=1.2
+   	alpha=1.2
 
-        prof_x=0.0
-        prof_y=0.0
-        prof_z=0.0
+    prof_x=0.0
+    prof_y=0.0
+    prof_z=0.0
 
-        !- upper z-boundary ---------------------------------------------------
+    !- upper z-boundary ---------------------------------------------------
 
-	if (1==0) then
-
-        if (iz_multi==pz) then
-
-           do k=0,pml-1
-              do n=0,lpd
-
-                 delta_z=(zmax-pml*dz-z(k,n))/(pml*dz)
-                 prof_z(0:nx,0:ny,k,0:lpd,0:lpd,n)=alpha*delta_z*delta_z
-
-              enddo
-           enddo
-
-        endif
-
+	if (1==0) then	
+	if (iz_multi==pz) then
+		
+		do k=0,pml-1
+        do n=0,lpd
+			
+			delta_z=(zmax-pml*dz-z(k,n))/(pml*dz)
+            prof_z(0:nx,0:ny,k,0:lpd,0:lpd,n)=alpha*delta_z*delta_z
+			
+		enddo
+        enddo
+	
+	endif
 	endif
 
-        !- lower z-boundary ---------------------------------------------------
+ 	!- lower z-boundary ---------------------------------------------------
 
-        if (iz_multi==1) then
+ 	if (iz_multi==1) then
+		
+		do k=(nz-pml+1),nz
+        do n=0,lpd
+			
+			delta_z=(zmin+pml*dz-z(k,n))/(pml*dz)
+            prof_z(0:nx,0:ny,k,0:lpd,0:lpd,n)=alpha*delta_z*delta_z
+			
+		enddo
+        enddo
+	
+	endif
 
-           do k=(nz-pml+1),nz
-              do n=0,lpd
+	!- left x-boundary ----------------------------------------------------
+	
+	if (ix_multi==1) then
+	
+		do i=0,pml-1
+        do n=0,lpd
+			
+			delta_x=(xmin+pml*dx-x(i,n))/(pml*dx)
+			prof_x(i,0:ny,0:nz,n,0:lpd,0:lpd)=alpha*delta_x*delta_x
+			
+		enddo
+		enddo
 
-                 delta_z=(zmin+pml*dz-z(k,n))/(pml*dz)
-                 prof_z(0:nx,0:ny,k,0:lpd,0:lpd,n)=alpha*delta_z*delta_z
+	endif
+	
+	!- right x-boundary ---------------------------------------------------
+	
+	if (ix_multi==px) then
+		
+		do i=(nx-pml+1),nx
+        do n=0,lpd
 
-              enddo
-           enddo
+        	delta_x=(xmax-dx*pml-x(i,n))/(pml*dx)
+            prof_x(i,0:ny,0:nz,n,0:lpd,0:lpd)=alpha*delta_x*delta_x
+			
+		enddo
+		enddo
+	
+	endif
+	
+	!- left y-boundary ----------------------------------------------------
+	
+	if (iy_multi==1) then
+		
+		do i=0,pml-1
+        do n=0,lpd
+			
+			delta_y=(ymin+pml*dy-y(i,n))/(pml*dy)
+            prof_y(0:nx,i,0:nz,0:lpd,n,0:lpd)=alpha*delta_y*delta_y
+			
+		enddo
+        enddo
+	
+	endif
+	
+	!- right y-boundary ---------------------------------------------------
+	
+	if (iy_multi==py) then
+		
+		do i=(ny-pml+1),ny
+		do n=0,lpd
 
-        endif
+			delta_y=(ymax-dy*pml-y(i,n))/(pml*dy)
+			prof_y(0:nx,i,0:nz,0:lpd,n,0:lpd)=alpha*delta_y*delta_y
+			
+		enddo
+		enddo
+	
+	endif
+	
+	!- normalise the corners ----------------------------------------------
 
-        !- left x-boundary ----------------------------------------------------
+    prof=prof_x+prof_y+prof_z
 
-        if (ix_multi==1) then
+    prof_z=2*prof_z/(1+prof/alpha)
+    prof_y=2*prof_y/(1+prof/alpha)
+    prof_x=2*prof_x/(1+prof/alpha)
 
-           do i=0,pml-1
-              do n=0,lpd
+    prof=prof_x+prof_y+prof_z
 
-                 delta_x=(xmin+pml*dx-x(i,n))/(pml*dx)
-                 prof_x(i,0:ny,0:nz,n,0:lpd,0:lpd)=alpha*delta_x*delta_x
-
-              enddo
-           enddo
-
-        endif
-
-        !- right x-boundary ---------------------------------------------------
-
-        if (ix_multi==px) then
-
-           do i=(nx-pml+1),nx
-              do n=0,lpd
-
-                 delta_x=(xmax-dx*pml-x(i,n))/(pml*dx)
-                 prof_x(i,0:ny,0:nz,n,0:lpd,0:lpd)=alpha*delta_x*delta_x
-
-              enddo
-           enddo
-
-        endif
-
-        !- left y-boundary ----------------------------------------------------
-
-        if (iy_multi==1) then
-
-           do i=0,pml-1
-              do n=0,lpd
-
-                 delta_y=(ymin+pml*dy-y(i,n))/(pml*dy)
-                 prof_y(0:nx,i,0:nz,0:lpd,n,0:lpd)=alpha*delta_y*delta_y
-
-              enddo
-           enddo
-
-        endif
-
-        !- right y-boundary ---------------------------------------------------
-
-        if (iy_multi==py) then
-
-           do i=(ny-pml+1),ny
-              do n=0,lpd
-
-                 delta_y=(ymax-dy*pml-y(i,n))/(pml*dy)
-                 prof_y(0:nx,i,0:nz,0:lpd,n,0:lpd)=alpha*delta_y*delta_y
-
-              enddo
-           enddo
-
-        endif
-
-        !- normalise the corners ----------------------------------------------
-
-        prof=prof_x+prof_y+prof_z
-
-        prof_z=2*prof_z/(1+prof/alpha)
-        prof_y=2*prof_y/(1+prof/alpha)
-        prof_x=2*prof_x/(1+prof/alpha)
-
-        prof=prof_x+prof_y+prof_z
-
-        taper=exp(-0.1*prof*prof)
+    taper=exp(-0.1*prof*prof)
 
 	!- map local prof to global prof --------------------------------------
 

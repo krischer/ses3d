@@ -1,4 +1,10 @@
 !==============================================================================
+! subroutine for reading most of the ses3d input.
+!==============================================================================
+! last modified: 16 April 2014 by Andreas Fichtner
+!==============================================================================
+
+!==============================================================================
 ! read and distribute input
 !==============================================================================
 
@@ -12,19 +18,19 @@ include 'mpif.h'
 	! variables
 	!======================================================================
 
-    	character(len=200) :: junk
+    character(len=200) :: junk
 
 	integer :: pp, dummy
-    	integer :: status(MPI_STATUS_SIZE)
-    	integer :: nx_min_loc, nx_max_loc
-    	integer :: ny_min_loc, ny_max_loc
-    	integer :: nz_min_loc, nz_max_loc
-    	integer :: ix_multi_loc, iy_multi_loc, iz_multi_loc
-    	integer :: i, k
+    integer :: status(MPI_STATUS_SIZE)
+    integer :: nx_min_loc, nx_max_loc
+    integer :: ny_min_loc, ny_max_loc
+    integer :: nz_min_loc, nz_max_loc
+    integer :: ix_multi_loc, iy_multi_loc, iz_multi_loc
+    integer :: i, k
 
-    	real :: xmin_loc, xmax_loc
-    	real :: ymin_loc, ymax_loc
-    	real :: zmin_loc, zmax_loc
+    real :: xmin_loc, xmax_loc
+    real :: ymin_loc, ymax_loc
+    real :: zmin_loc, zmax_loc
 
 	!======================================================================
 	! read box file, only process 0, and send to other processes
@@ -210,34 +216,34 @@ include 'mpif.h'
 		write(99,*) 'z-coordinate of the source (depth): zzs=',zzs
 		read(15,*)source_type
 		write(99,*) 'source_type: ',source_type
-                read(15,*)MOM_xx
-                write(99,*) 'Mxx: ', MOM_xx
-                read(15,*)MOM_yy
-                write(99,*) 'Myy: ', MOM_yy
-                read(15,*)MOM_zz
-                write(99,*) 'Mzz: ', MOM_zz
-                read(15,*)MOM_xy
-                write(99,*) 'Mxy: ', MOM_xy
-                read(15,*)MOM_xz
-                write(99,*) 'Mxz: ', MOM_xz
-                read(15,*) MOM_yz
-                write(99,*) 'Myz: ', MOM_yz
+     	read(15,*)MOM_xx
+        write(99,*) 'Mxx: ', MOM_xx
+        read(15,*)MOM_yy
+       	write(99,*) 'Myy: ', MOM_yy
+        read(15,*)MOM_zz
+        write(99,*) 'Mzz: ', MOM_zz
+        read(15,*)MOM_xy
+        write(99,*) 'Mxy: ', MOM_xy
+        read(15,*)MOM_xz
+        write(99,*) 'Mxz: ', MOM_xz
+        read(15,*) MOM_yz
+        write(99,*) 'Myz: ', MOM_yz
 
 		!- output directory ------------------------------------------
 
 		write(99,*) '- output directory -----------------------------------------'
 		read(15,*)junk
 		read(15, '(A1000)')ofd
-        	ofd = trim(ofd)//'/'
+        ofd = trim(ofd)//'/'
 		write(99,*) 'output field directory: ', ofd
-        	!- Create the directory if it does not exist.
-        	call system('mkdir -p '//ofd)
+        !- Create the directory if it does not exist.
+        call system('mkdir -p '//ofd)
 
 		!- output flags ----------------------------------------------
 
 		write(99,*) '- output flags ---------------------------------------------'
 		read(15,*)junk
-                read(15,*)ssamp
+     	read(15,*)ssamp
 		write(99,*) 'output rate: ssamp=',ssamp
 		read(15,*)output_displacement
 		write(99,*) 'output_displcement=', output_displacement
@@ -303,20 +309,20 @@ include 'mpif.h'
 		read(15, '(A1000)') ffd
 		ffd=trim(ffd)//'/'//trim(event_indices(i_events))//'/'
 		write(99,*) 'forward field directory: ', ffd
-        	!- Create the directory if it does not exist.
-        	call system('mkdir -p '//ffd)
+        !- Create the directory if it does not exist.
+        call system('mkdir -p '//ffd)
 
 		write(99,*) '------------------------------------------------------------'
 
 		close(unit=15)
 
-                xxs=xxs*pi/180
-                yys=yys*pi/180
+       	xxs=xxs*pi/180
+        yys=yys*pi/180
 
-                xmin_global=xmin_global*pi/180
-                xmax_global=xmax_global*pi/180
-                ymin_global=ymin_global*pi/180
-                ymax_global=ymax_global*pi/180
+        xmin_global=xmin_global*pi/180
+        xmax_global=xmax_global*pi/180
+        ymin_global=ymin_global*pi/180
+        ymax_global=ymax_global*pi/180
 
 		!================================================================================================
 		! read relax file
@@ -364,12 +370,12 @@ include 'mpif.h'
 	call mpi_bcast(zzs, 1, mpi_real, 0, mpi_comm_world, ierr)
 	call mpi_bcast(source_type, 1, mpi_integer, 0, mpi_comm_world, ierr)
 
-    	call mpi_bcast(MOM_xx, 1, mpi_real, 0, mpi_comm_world, ierr)
-    	call mpi_bcast(MOM_yy, 1, mpi_real, 0, mpi_comm_world, ierr)
-    	call mpi_bcast(MOM_zz, 1, mpi_real, 0, mpi_comm_world, ierr)
-    	call mpi_bcast(MOM_xy, 1, mpi_real, 0, mpi_comm_world, ierr)
-    	call mpi_bcast(MOM_xz, 1, mpi_real, 0, mpi_comm_world, ierr)
-    	call mpi_bcast(MOM_yz, 1, mpi_real, 0, mpi_comm_world, ierr)
+    call mpi_bcast(MOM_xx, 1, mpi_real, 0, mpi_comm_world, ierr)
+    call mpi_bcast(MOM_yy, 1, mpi_real, 0, mpi_comm_world, ierr)
+    call mpi_bcast(MOM_zz, 1, mpi_real, 0, mpi_comm_world, ierr)
+    call mpi_bcast(MOM_xy, 1, mpi_real, 0, mpi_comm_world, ierr)
+    call mpi_bcast(MOM_xz, 1, mpi_real, 0, mpi_comm_world, ierr)
+    call mpi_bcast(MOM_yz, 1, mpi_real, 0, mpi_comm_world, ierr)
 
 	call mpi_bcast(xmin_global, 1, mpi_real, 0, mpi_comm_world, ierr)
 	call mpi_bcast(xmax_global, 1, mpi_real, 0, mpi_comm_world, ierr)
@@ -444,7 +450,7 @@ include 'mpif.h'
 	endif
 
 	!=============================================================================
-	! Read structural information (rho, mu, lambda, A, B, C), formatted or unformatted
+	! Read structural information (rho, mu, lambda, A, B, C).
 	!=============================================================================
 
 	call int2str(my_rank,junk)
@@ -532,8 +538,8 @@ include 'mpif.h'
 				read(10,*) recloc_global(1,i), recloc_global(2,i), recloc_global(3,i)
 				write(99,*) station_name_global(i), recloc_global(1,i), recloc_global(2,i), recloc_global(3,i)
 
-                        	recloc_global(1,i)=recloc_global(1,i)*pi/180
-                        	recloc_global(2,i)=recloc_global(2,i)*pi/180
+             	recloc_global(1,i)=recloc_global(1,i)*pi/180
+                recloc_global(2,i)=recloc_global(2,i)*pi/180
 
 			enddo
 
@@ -550,71 +556,70 @@ include 'mpif.h'
 	endif
 
 	!=============================================================================
-        ! read saving vector
-        !=============================================================================
+   	! read saving vector
+   	!=============================================================================
 
 	if (adjoint_flag==2) then
 
 		call int2str(my_rank,junk)
 
-        	write(99,*) 'read saving vector'
-
+        write(99,*) 'read saving vector'
 
 		open(unit=10,file=ffd(1:len_trim(ffd))//'saving_vector_'//junk(1:len_trim(junk)),action='read')
 
-        	do k=1,nt
+       	do k=1,nt
+			
+			read(10,*) saving_vector(k)
 
-           		read(10,*) saving_vector(k)
+        enddo
 
-        	enddo
-
-        	close(unit=10)
+       	close(unit=10)
 
 	endif
 
 	!=============================================================================
-        ! read adjoint source locations, process 0 only, and broadcast to others
-        !=============================================================================
+  	! read adjoint source locations, process 0 only, and broadcast to others
+   	!=============================================================================
 
 	if (adjoint_flag==2) then
 
-        	if (my_rank==0) then
+        if (my_rank==0) then
 
 			write(99,*) 'read adjoint source locations *******************************'
 
-           		!- read adjoint source locations ------------------------------------------
+           	!- read adjoint source locations ------------------------------------------
 
-           		open(unit=10,file='../ADJOINT/'//trim(event_indices(i_events))//'/ad_srcfile',action='read')
+           	open(unit=10,file='../ADJOINT/'//trim(event_indices(i_events))//'/ad_srcfile',action='read')
 
 			read(10,*) nr_adsrc_global
 
 			do k=1,nr_adsrc_global
+				
+				read(10,*) ad_srcloc_global(1,k), ad_srcloc_global(2,k), ad_srcloc_global(3,k)
 
-              			read(10,*) ad_srcloc_global(1,k), ad_srcloc_global(2,k), ad_srcloc_global(3,k)
+              	ad_srcloc_global(1,k)=ad_srcloc_global(1,k)*pi/180
+              	ad_srcloc_global(2,k)=ad_srcloc_global(2,k)*pi/180
 
-              			ad_srcloc_global(1,k)=ad_srcloc_global(1,k)*pi/180
-              			ad_srcloc_global(2,k)=ad_srcloc_global(2,k)*pi/180
+              	write(99,*) ad_srcloc_global(1,k)*180/pi, ad_srcloc_global(2,k)*180/pi, ad_srcloc_global(3,k)
+              	write(*,*) ad_srcloc_global(1,k)*180/pi, ad_srcloc_global(2,k)*180/pi, ad_srcloc_global(3,k)
 
-              			write(99,*) ad_srcloc_global(1,k)*180/pi, ad_srcloc_global(2,k)*180/pi, ad_srcloc_global(3,k)
-              			write(*,*) ad_srcloc_global(1,k)*180/pi, ad_srcloc_global(2,k)*180/pi, ad_srcloc_global(3,k)
-
-           		enddo
+           	enddo
 
 			write(99,*) 'number of adjoint sources: ', nr_adsrc_global
-           		write(*,*) 'number of adjoint sources: ', nr_adsrc_global
+           	write(*,*) 'number of adjoint sources: ', nr_adsrc_global
 
            	close(unit=10)
 
-        	endif
+        endif
 
-        	call mpi_bcast(nr_adsrc_global, 1, mpi_integer, 0, mpi_comm_world, ierr)
-        	call mpi_bcast(ad_srcloc_global, 3*maxnr, mpi_real, 0, mpi_comm_world, ierr)
+        call mpi_bcast(nr_adsrc_global, 1, mpi_integer, 0, mpi_comm_world, ierr)
+        call mpi_bcast(ad_srcloc_global, 3*maxnr, mpi_real, 0, mpi_comm_world, ierr)
 
 	endif
 
 	!=============================================================================
-        ! finish
-        !=============================================================================
+  	! finish
+   	!=============================================================================
 
 	write(99,*) 'end input'
 	write(99,*) '------------------------------------------------------------'

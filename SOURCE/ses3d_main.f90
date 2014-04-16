@@ -1,6 +1,7 @@
 
 !*****************************************************************************
 !************** main program for spherical spectral elements *****************
+! last modified: 16 April 2014 by Andreas Fichtner
 !*****************************************************************************
 
 program ses3d_main
@@ -9,7 +10,7 @@ use variables
 implicit none
 include 'mpif.h'
 
-        character(len=8) :: date1,date2
+   	character(len=8) :: date1,date2
 	character(len=10) :: time1,time2
 	character(len=20) :: dummy
 	real :: vx_max, vx_min
@@ -27,19 +28,19 @@ include 'mpif.h'
 	!======================================================================
 
 	if (my_rank==0) then
+		
+		!- Create the logfile directory if it does not exist.
+      	call system('mkdir -p ../DATA/LOGFILES')
 
-        !- Create the logfile directory if it does not exist.
-      call system('mkdir -p ../DATA/LOGFILES')
+	  	open(unit=99,file='../INPUT/event_list',action='read')
 
-	  open(unit=99,file='../INPUT/event_list',action='read')
+	  	read(99,*) n_events
 
-	  read(99,*) n_events
+	  	do it=1,n_events
+	    	read(99,*) event_indices(it)
+	  	  enddo
 
-	  do it=1,n_events
-	    read(99,*) event_indices(it)
-	  enddo
-
-	  close(unit=99)
+	  	close(unit=99)
 
 	endif
 
@@ -118,21 +119,21 @@ include 'mpif.h'
 
 			if ((adjoint_flag==0) .or. (adjoint_flag==1)) then
 
-			write(*,*) 'iteration ',it ,':   ', vx_min, '< vx <', vx_max, 'ispml=',ispml
+				write(*,*) 'iteration ',it ,':   ', vx_min, '< vx <', vx_max, 'ispml=',ispml
 
 			elseif (adjoint_flag==2) then
 
-   			write(*,*) 'adjoint iteration ',it ,':   ', vx_min, '< vx <', vx_max, 'ispml=',ispml
+   				write(*,*) 'adjoint iteration ',it ,':   ', vx_min, '< vx <', vx_max, 'ispml=',ispml
 
 			endif
 
 		endif
 
-                if (mod(it,ssamp)==0) then
-
-                   call ses3d_output(it)
-
-                endif
+     	if (mod(it,ssamp)==0) then
+			
+			call ses3d_output(it)
+		
+		endif
 
 		!==============================================================
 		! save forward wavefield
@@ -140,27 +141,27 @@ include 'mpif.h'
 
 		if (adjoint_flag==1) then
 
-                	if ((mod(it,samp_ad)==0) .or. (it==1) .or. (it==nt)) then
+                if ((mod(it,samp_ad)==0) .or. (it==1) .or. (it==nt)) then
 
-				!- store strain rate --------------------------
+					!- store strain rate --------------------------
 
-				call ses3d_store(vx,'vx',it,lpd,1021)
-				call ses3d_store(vy,'vy',it,lpd,1022)
-				call ses3d_store(vz,'vz',it,lpd,1023)
+					call ses3d_store(vx,'vx',it,lpd,1021)
+					call ses3d_store(vy,'vy',it,lpd,1022)
+					call ses3d_store(vz,'vz',it,lpd,1023)
 
-				call ses3d_store(dxux,'exx',it,lpd,1041)
-				call ses3d_store(dyuy,'eyy',it,lpd,1042)
-				call ses3d_store(dzuz,'ezz',it,lpd,1043)
+					call ses3d_store(dxux,'exx',it,lpd,1041)
+					call ses3d_store(dyuy,'eyy',it,lpd,1042)
+					call ses3d_store(dzuz,'ezz',it,lpd,1043)
 
-				call ses3d_store((dxuy+dyux)/2,'exy',it,lpd,1044)
-				call ses3d_store((dxuz+dzux)/2,'exz',it,lpd,1045)
-				call ses3d_store((dyuz+dzuy)/2,'eyz',it,lpd,1046)
+					call ses3d_store((dxuy+dyux)/2,'exy',it,lpd,1044)
+					call ses3d_store((dxuz+dzux)/2,'exz',it,lpd,1045)
+					call ses3d_store((dyuz+dzuy)/2,'eyz',it,lpd,1046)
 
-				!- document saving vector ---------------------
+					!- document saving vector ---------------------
 
-                        	saving_vector(it)=it
+              		saving_vector(it)=it
 
-                	endif
+               	endif
 
 		endif
 
