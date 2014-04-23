@@ -14,7 +14,7 @@ UNIT_DICT = {
     "vp": r"$\frac{\mathrm{m}}{\mathrm{s}}$",
     "vsv": r"$\frac{\mathrm{m}}{\mathrm{s}}$",
     "vsh": r"$\frac{\mathrm{m}}{\mathrm{s}}$",
-    "rho": r"$\frac{\mathrm{kg}^3}{\mathrm{m}^3}$",
+    #"rho": r"$\frac{\mathrm{kg}^3}{\mathrm{m}^3}$",
     "rhoinv": r"$\frac{\mathrm{m}^3}{\mathrm{kg}^3}$",
     "vx": r"$\frac{\mathrm{m}}{\mathrm{s}}$",
     "vy": r"$\frac{\mathrm{m}}{\mathrm{s}}$",
@@ -50,13 +50,13 @@ class ses3d_fields(object):
 		if field_type == "velocity_snapshot":
 
 			self.pure_components = ["vx", "vy", "vz"]
-			self.components = {}
+			self.derived_components = {}
 
 		#- Read available kernels. ----------------------------------------------------------------
 		if field_type == "kernel":
 
-			self.pure_components = ["Q_mu", "Q_kappa", "alpha_mu", "alpha_kappa"]
-			self.components = {}
+			self.pure_components = ["cp", "csh", "csv", "rho", "Q_mu", "Q_kappa", "alpha_mu", "alpha_kappa"]
+			self.derived_components = {}
 
 		self.setup = self.read_setup()
 		self.make_coordinates()
@@ -317,6 +317,62 @@ class ses3d_fields(object):
 		return field
 
 	#==============================================================================================
+	#- Plot slice at constant colatitude.
+	#==============================================================================================
+	def plot_colat_slice(self, component, colat, valmin, valmax, iteration=0, verbose=True):
+
+		#- Some initialisations. ------------------------------------------------------------------
+		
+		colat = np.pi * colat / 180.0
+
+		n_procs = self.setup["procs"]["px"] * self.setup["procs"]["py"] * self.setup["procs"]["pz"]
+
+		vmax = float("-inf")
+		vmin = float("inf")
+
+		fig, ax = plt.subplots()
+
+		#- Loop over processor boxes and check if colat falls within the volume. ------------------
+		for p in range(n_procs):
+
+			if (colat >= self.theta[p,:].min()) & (colat <= self.theta[p,:].max()):
+
+				#- Read this field and make lats & lons. ------------------------------------------
+				field = self.read_single_box(component,p,iteration)
+
+				r, lon = np.meshgrid(self.z[p,:], self.phi[p,:])
+
+				x = r * np.cos(lon)
+				y = r * np.sin(lon)
+
+				#- Find the colat index and plot for this one box. --------------------------------
+				idx=min(np.where(min(np.abs(self.theta[p,:]-colat))==np.abs(self.theta[p,:]-colat))[0])
+
+				colat_effective = self.theta[p,idx]*180.0/np.pi
+
+				#- Find min and max values. -------------------------------------------------------
+
+				vmax = max(vmax, field[idx,:,:].max())
+				vmin = min(vmin, field[idx,:,:].min())
+
+				#- Make a nice colourmap and plot. ------------------------------------------------
+				my_colormap=cm.make_colormap({0.0:[0.1,0.0,0.0], 0.2:[0.8,0.0,0.0], 0.3:[1.0,0.7,0.0],0.48:[0.92,0.92,0.92], 0.5:[0.92,0.92,0.92], 0.52:[0.92,0.92,0.92], 0.7:[0.0,0.6,0.7], 0.8:[0.0,0.0,0.8], 1.0:[0.0,0.0,0.1]})
+
+				cax = ax.pcolor(x, y, field[idx,:,:], cmap=my_colormap, vmin=valmin,vmax=valmax)
+
+
+		#- Add colobar and title. ------------------------------------------------------------------
+		cbar = fig.colorbar(cax)
+		if component in UNIT_DICT:
+			cb.set_label(UNIT_DICT[component], fontsize="x-large", rotation=0)
+	
+		plt.suptitle("Vertical slice of %s at %i degree colatitude" % (component, colat_effective), size="large")
+
+		plt.axis('equal')
+		plt.show()
+
+
+	#==============================================================================================
 	#- Plot depth slice.
 	#==============================================================================================
 	def plot_depth_slice(self, component, depth, valmin, valmax, iteration=0, verbose=True, stations=True, res="i"):
@@ -345,11 +401,10 @@ class ses3d_fields(object):
 		lon_min = self.setup["domain"]["phi_min"]*180.0/np.pi
 		lon_max = self.setup["domain"]["phi_max"]*180.0/np.pi
 
-		if self.rotangle != 0.0:
-			lat_centre = (lat_max+lat_min)/2.0
-			lon_centre = (lon_max+lon_min)/2.0
-			lat_centre,lon_centre = rot.rotate_coordinates(self.n,-self.rotangle,90.0-lat_centre,lon_centre)
-			lat_centre = 90.0-lat_centre
+		lat_centre = (lat_max+lat_min)/2.0
+		lon_centre = (lon_max+lon_min)/2.0
+		lat_centre,lon_centre = rot.rotate_coordinates(self.n,-self.rotangle,90.0-lat_centre,lon_centre)
+		lat_centre = 90.0-lat_centre
 
 		d_lon = np.round((lon_max-lon_min)/10.0)
 		d_lat = np.round((lat_max-lat_min)/10.0)
@@ -383,6 +438,8 @@ class ses3d_fields(object):
 				#- Find the depth index and plot for this one box. --------------------------------
 				idz=min(np.where(min(np.abs(self.z[p,:]-radius))==np.abs(self.z[p,:]-radius))[0])
 
+				r_effective = int(self.z[p,idz]/1000.0)
+
 				#- Find min and max values. -------------------------------------------------------
 
 				vmax = max(vmax, field[:,:,idz].max())
@@ -412,14 +469,14 @@ class ses3d_fields(object):
 				my_colormap=cm.make_colormap({0.0:[0.1,0.0,0.0], 0.2:[0.8,0.0,0.0], 0.3:[1.0,0.7,0.0],0.48:[0.92,0.92,0.92], 0.5:[0.92,0.92,0.92], 0.52:[0.92,0.92,0.92], 0.7:[0.0,0.6,0.7], 0.8:[0.0,0.0,0.8], 1.0:[0.0,0.0,0.1]})
 
 				x, y = m(lon, lat)
-				im = m.pcolormesh(x, y, -1.0e9*field[:,:,idz], cmap=my_colormap, vmin=valmin,vmax=valmax)
+				im = m.pcolormesh(x, y, field[:,:,idz], cmap=my_colormap, vmin=valmin,vmax=valmax)
 
 		#- Add colobar and title. ------------------------------------------------------------------
 		cb = m.colorbar(im, "right", size="3%", pad='2%')
 		if component in UNIT_DICT:
 			cb.set_label(UNIT_DICT[component], fontsize="x-large", rotation=0)
 	
-		plt.suptitle("Depth slice of %s at %i km" % (component, int(self.z[p,idz]/1000.0)), size="large")
+		plt.suptitle("Depth slice of %s at %i km" % (component, r_effective), size="large")
 
 		#- Plot stations if available. ------------------------------------------------------------
 		if (self.stations == True) & (stations==True):

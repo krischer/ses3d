@@ -333,31 +333,31 @@ include 'mpif.h'
 
 		!- Kernels for visco-elastic parameters. ======================
 
-		if (is_diss==1) then
+!		if (is_diss==1) then
 
-		   	fn=ofd(1:len_trim(ofd))//'grad_Q_mu_'//dummy(1:len_trim(dummy))
-		   	open(unit=10,file=fn,action='write',form='unformatted')
+!		   	fn=ofd(1:len_trim(ofd))//'grad_Q_mu_'//dummy(1:len_trim(dummy))
+!		   	open(unit=10,file=fn,action='write',form='unformatted')
 
-			fn=ofd(1:len_trim(ofd))//'grad_alpha_mu_'//dummy(1:len_trim(dummy))
-		   	open(unit=11,file=fn,action='write',form='unformatted')
+!			fn=ofd(1:len_trim(ofd))//'grad_alpha_mu_'//dummy(1:len_trim(dummy))
+!		   	open(unit=11,file=fn,action='write',form='unformatted')
 
-			fn=ofd(1:len_trim(ofd))//'grad_Q_kappa_'//dummy(1:len_trim(dummy))
-		   	open(unit=12,file=fn,action='write',form='unformatted')
+!			fn=ofd(1:len_trim(ofd))//'grad_Q_kappa_'//dummy(1:len_trim(dummy))
+!		   	open(unit=12,file=fn,action='write',form='unformatted')
 
-			fn=ofd(1:len_trim(ofd))//'grad_alpha_kappa_'//dummy(1:len_trim(dummy))
-		   	open(unit=13,file=fn,action='write',form='unformatted')
+!			fn=ofd(1:len_trim(ofd))//'grad_alpha_kappa_'//dummy(1:len_trim(dummy))
+!		   	open(unit=13,file=fn,action='write',form='unformatted')
 
-			write(10) grad_Q_mu
-			write(11) grad_alpha_mu
-			write(12) grad_Q_kappa
-			write(13) grad_alpha_kappa
+!			write(10) grad_Q_mu
+!			write(11) grad_alpha_mu
+!			write(12) grad_Q_kappa
+!			write(13) grad_alpha_kappa
 
-			close(unit=10)
-			close(unit=11)
-			close(unit=12)
-			close(unit=13)
+!			close(unit=10)
+!			close(unit=11)
+!			close(unit=12)
+!			close(unit=13)
 
-		endif
+!		endif
 
 
 	endif
