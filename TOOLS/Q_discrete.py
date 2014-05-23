@@ -49,8 +49,8 @@ f=np.logspace(np.log10(f_min),np.log10(f_max),100)
 w=2.0*np.pi*f
 
 #- minimum and maximum frequencies for plotting in Hz
-f_min_plot=0.8*f_min
-f_max_plot=1.2*f_max
+f_min_plot=0.5*f_min
+f_max_plot=2.0*f_max
 
 f_plot=np.logspace(np.log10(f_min_plot),np.log10(f_max_plot),100)
 w_plot=2.0*np.pi*f_plot
