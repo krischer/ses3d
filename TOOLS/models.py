@@ -5,6 +5,7 @@ import matplotlib.pylab as plt
 from mpl_toolkits.basemap import Basemap
 import colormaps as cm
 import rotation as rot
+import Q_models as q
 
 #########################################################################
 #- parameters for plotting
@@ -138,7 +139,7 @@ class ses3d_model(object):
   def read(self,directory,filename,verbose=False):
     """ read an ses3d model from a file
 
-	read(self,directory,filename,verbose=False):
+    read(self,directory,filename,verbose=False):
     """
 
     #- read block files ====================================================
@@ -264,12 +265,88 @@ class ses3d_model(object):
       fid_m.write(str(nx*ny*nz)+'\n')
 
       for idx in np.arange(nx):
-	for idy in np.arange(ny):
-	  for idz in np.arange(nz):
+        for idy in np.arange(ny):
+          for idz in np.arange(nz):
 
-	    fid_m.write(str(self.m[k].v[idx,idy,idz])+'\n')
+            fid_m.write(str(self.m[k].v[idx,idy,idz])+'\n')
 
     fid_m.close()
+
+  #########################################################################
+  #- Cumpute relaxed velocities from velocities at 1 s reference period.
+  #########################################################################
+
+  def ref2relax(self, qmodel='cem', nrelax=3):
+    """
+    ref2relax(qmodel='cem', nrelax=3)
+
+    Assuming that the current velocity model is given at the reference period 1 s, 
+    ref2relax computes the relaxed velocities. They may then be written to a file.
+
+    For this conversion, the relaxation parameters from the /INPUT/relax file are taken.
+
+    Currently implemented Q models (qmodel): cem, prem, ql6 . 
+
+    nrelax is the number of relaxation mechnisms.
+    """
+
+    #- Read the relaxation parameters from the relax file. ----------------
+
+    tau_p=np.zeros(nrelax)
+    D_p=np.zeros(nrelax)
+
+    fid=open('../INPUT/relax','r')
+    
+    fid.readline()
+    
+    for n in range(nrelax):
+      tau_p[n]=float(fid.readline().strip())
+
+    fid.readline()
+
+    for n in range(nrelax):
+      D_p[n]=float(fid.readline().strip())
+
+    fid.close()
+
+    #- Loop over subvolumes. ----------------------------------------------
+
+    for k in np.arange(self.nsubvol):
+
+      nx=len(self.m[k].lat)-1
+      ny=len(self.m[k].lon)-1
+      nz=len(self.m[k].r)-1
+
+      #- Loop over radius within the subvolume. ---------------------------
+      for idz in np.arange(nz):
+
+        #- Compute Q. -----------------------------------------------------
+        if qmodel=='cem':
+          Q=q.q_cem(self.m[k].r[idz])
+        elif qmodel=='ql6':
+          Q=q.q_ql6(self.m[k].r[idz])
+        elif qmodel=='prem':
+          Q=q.q_prem(self.m[k].r[idz])
+
+        #- Compute A and B for the reference period of 1 s. ---------------
+
+        A=1.0
+        B=0.0
+        w=2.0*np.pi
+
+        tau=1.0/Q
+
+        for n in range(nrelax):
+          A+=tau*D_p[n]*(w**2)*(tau_p[n]**2)/(1.0+(w**2)*(tau_p[n]**2))
+          B+=tau*D_p[n]*w*tau_p[n]/(1.0+(w**2)*(tau_p[n]**2))
+
+        conversion_factor=(A+np.sqrt(A**2+B**2))/(A**2+B**2)
+        conversion_factor=np.sqrt(0.5*conversion_factor)
+
+        #- Correct velocities. --------------------------------------------
+
+        self.m[k].v[:,:,idz]=conversion_factor*self.m[k].v[:,:,idz]
+    
 
   #########################################################################
   #- CUt Depth LEvel
