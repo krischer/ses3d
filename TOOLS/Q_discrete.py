@@ -21,8 +21,8 @@ Q_0=np.array([50.0, 100.0, 500.0])
 
 #- Minimum and maximum frequencies for optimisation in Hz. These values determine the width of the
 #- absorption band.
-f_min=1.0/150.0
-f_max=1.0/15.0
+f_min=1.0/500.0
+f_max=1.0/100.0
 
 #- Number of relaxation mechanisms. The broader the absorption band, the more mechanisms are needed.
 N=3

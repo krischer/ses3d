@@ -22,27 +22,27 @@ include 'mpif.h'
 	!- Compute kernels by integrating on the fly.
 	!======================================================================
 
-    if (saving_vector(nt+1-it)>0) then
+    	if (saving_vector(nt+1-it)>0) then
 
-		!==============================================================
+	!==============================================================
     	! read dynamic fields
     	!==============================================================
 
         !- read velocity fields ---------------------------------------
 
-        call ses3d_restore(vx_fw,'vx',it,4,1021)
-        call ses3d_restore(vy_fw,'vy',it,4,1022)
-        call ses3d_restore(vz_fw,'vz',it,4,1023)
+        call ses3d_restore(vx_fw,'vx',it,lpd,1021)
+        call ses3d_restore(vy_fw,'vy',it,lpd,1022)
+        call ses3d_restore(vz_fw,'vz',it,lpd,1023)
 
 		!- read strain rates ------------------------------------------
 
-		call ses3d_restore(exx_fw,'exx',it,4,2021)
-		call ses3d_restore(eyy_fw,'eyy',it,4,2022)
-		call ses3d_restore(ezz_fw,'ezz',it,4,2023)
+		call ses3d_restore(exx_fw,'exx',it,lpd,2021)
+		call ses3d_restore(eyy_fw,'eyy',it,lpd,2022)
+		call ses3d_restore(ezz_fw,'ezz',it,lpd,2023)
 
-		call ses3d_restore(exy_fw,'exy',it,4,2024)
-		call ses3d_restore(exz_fw,'exz',it,4,2025)
-		call ses3d_restore(eyz_fw,'eyz',it,4,2026)
+		call ses3d_restore(exy_fw,'exy',it,lpd,2024)
+		call ses3d_restore(exz_fw,'exz',it,lpd,2025)
+		call ses3d_restore(eyz_fw,'eyz',it,lpd,2026)
 
 		!==============================================================
 		!- Preliminaries.==============================================
