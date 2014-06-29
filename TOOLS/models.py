@@ -7,11 +7,6 @@ import colormaps as cm
 import rotation as rot
 import Q_models as q
 
-#########################################################################
-#- parameters for plotting
-#########################################################################
-
-res='i'   # c, l, i, h f
 
 #########################################################################
 #- define submodel model class
@@ -23,10 +18,16 @@ class ses3d_submodel(object):
 
   def __init__(self):
 
+    #- coordinate lines
     self.lat=np.zeros(1)
     self.lon=np.zeros(1)
     self.r=np.zeros(1)
 
+    #- rotated coordinate lines
+    self.lat_rot=np.zeros(1)
+    self.lon_rot=np.zeros(1)
+
+    #- field
     self.v=np.zeros((1, 1, 1))
 
 
@@ -55,7 +56,6 @@ class ses3d_model(object):
     self.m=[]
 
     #- read rotation parameters
-
     fid=open('rotation_parameters.txt','r')
     fid.readline()
     self.phi=float(fid.readline().strip())
@@ -63,6 +63,7 @@ class ses3d_model(object):
     line=fid.readline().strip().split(' ')
     self.n=np.array([float(line[0]),float(line[1]),float(line[2])])
     fid.close()
+
 
   #########################################################################
   #- multiplication with a scalar
@@ -75,6 +76,7 @@ class ses3d_model(object):
     res=ses3d_model()
 
     res.nsubvol=self.nsubvol
+
     res.lat_min=self.lat_min
     res.lat_max=self.lat_max
     res.lon_min=self.lon_min
@@ -82,7 +84,9 @@ class ses3d_model(object):
     res.lat_centre=self.lat_centre
     res.lon_centre=self.lon_centre
     res.phi=self.phi
+
     res.n=self.n
+
     res.global_regional=self.global_regional
 
     for k in np.arange(self.nsubvol):
@@ -92,11 +96,16 @@ class ses3d_model(object):
       subvol.lat=self.m[k].lat
       subvol.lon=self.m[k].lon
       subvol.r=self.m[k].r
+
+      subvol.lat_rot=self.m[k].lat_rot
+      subvol.lon_rot=self.m[k].lon_rot
+      
       subvol.v=factor*self.m[k].v
 
       res.m.append(subvol)
 
     return res
+
 
   #########################################################################
   #- adding two models
@@ -126,11 +135,16 @@ class ses3d_model(object):
       subvol.lat=self.m[k].lat
       subvol.lon=self.m[k].lon
       subvol.r=self.m[k].r
-      subvol.v=other_model.m[k].v+self.m[k].v
+
+      subvol.lat_rot=self.m[k].lat_rot
+      subvol.lon_rot=self.m[k].lon_rot
+      
+      subvol.v=factor*self.m[k].v
 
       res.m.append(subvol)
 
     return res
+
 
   #########################################################################
   #- read a 3D model
@@ -185,6 +199,28 @@ class ses3d_model(object):
       subvol.r  =dz[(idz[k]+1):(idz[k]+1+dz[idz[k]])]
       self.m.append(subvol)
 
+    #- compute rotated version of the coordinate lines ====================
+
+    if self.phi!=0.0:
+
+      for k in np.arange(self.nsubvol,dtype=int):
+
+        nx=len(self.m[k].lat)
+        ny=len(self.m[k].lon)
+
+        self.m[k].lat_rot=np.zeros([nx,ny])
+        self.m[k].lon_rot=np.zeros([nx,ny])
+
+        for idx in np.arange(nx):
+          for idy in np.arange(ny):
+
+            self.m[k].lat_rot[idx,idy],self.m[k].lon_rot[idx,idy]=rot.rotate_coordinates(self.n,-self.phi,90.0-self.m[k].lat[idx],self.m[k].lon[idy])
+            self.m[k].lat_rot[idx,idy]=90.0-self.m[k].lat_rot[idx,idy]
+
+    else:
+
+      self.m[k].lat_rot,self.m[k].lon_rot=np.meshgrid(self.m[k].lat,self.m[k].lon)
+
     #- read model volume ==================================================
 
     fid_m=open(directory+filename,'r')
@@ -218,19 +254,16 @@ class ses3d_model(object):
     self.lon_max=-180.0
 
     for k in np.arange(self.nsubvol):
-      if np.min(self.m[k].lat) < self.lat_min: self.lat_min = np.min(self.m[k].lat)
-      if np.max(self.m[k].lat) > self.lat_max: self.lat_max = np.max(self.m[k].lat)
-      if np.min(self.m[k].lon) < self.lon_min: self.lon_min = np.min(self.m[k].lon)
-      if np.max(self.m[k].lon) > self.lon_max: self.lon_max = np.max(self.m[k].lon)
+      if np.min(self.m[k].lat_rot) < self.lat_min: self.lat_min = np.min(self.m[k].lat_rot)
+      if np.max(self.m[k].lat_rot) > self.lat_max: self.lat_max = np.max(self.m[k].lat_rot)
+      if np.min(self.m[k].lon_rot) < self.lon_min: self.lon_min = np.min(self.m[k].lon_rot)
+      if np.max(self.m[k].lon_rot) > self.lon_max: self.lon_max = np.max(self.m[k].lon_rot)
 
-    if ((self.lat_max-self.lat_min) > 30.0 or (self.lon_max-self.lon_min) > 30.0):
+    if ((self.lat_max-self.lat_min) > 90.0 or (self.lon_max-self.lon_min) > 90.0):
       self.global_regional = "global"
 
       self.lat_centre = (self.lat_max+self.lat_min)/2.0
       self.lon_centre = (self.lon_max+self.lon_min)/2.0
-
-      self.lat_centre,self.lon_centre = rot.rotate_coordinates(self.n,-self.phi,90.0-self.lat_centre,self.lon_centre)
-      self.lat_centre = 90.0-self.lat_centre
 
     else:
       self.global_regional = "regional"
@@ -273,7 +306,94 @@ class ses3d_model(object):
     fid_m.close()
 
   #########################################################################
-  #- Cumpute relaxed velocities from velocities at 1 s reference period.
+  #- Apply horizontal smoothing.
+  #########################################################################
+
+  def smooth_horizontal(self,sigma):
+    """
+    smooth_horizontal(self,sigma)
+
+    Experimental function for the horizontal smoothing with a Gaussian of width sigma.
+    The Gaussian moves across the horizontal slices and computes the integral over
+    the windowed model.
+
+    WARNING: Currently, the smoothing only works within each subvolume. The problem 
+    of smoothing across subvolumes without having excessive algorithmic complexity 
+    and with fast compute times, awaits resolution ... .
+
+    """
+
+    #- Loop over subvolumes.-----------------------------------------------
+
+    for n in np.arange(self.nsubvol):
+
+      #- Size of the array.
+      nx=len(self.m[n].lat)-1
+      ny=len(self.m[n].lon)-1
+      nz=len(self.m[n].r)-1
+
+      #- Estimate element width.
+      r=np.mean(self.m[n].r)
+      dx=r*np.pi*(self.m[n].lat[0]-self.m[n].lat[1])/180.0
+      
+      #- Colat and lon fields for the small Gaussian.
+      dn=2*np.round(sigma/dx)
+
+      nx_min=np.round(float(nx)/2.0)-dn
+      nx_max=np.round(float(nx)/2.0)+dn
+
+      ny_min=np.round(float(ny)/2.0)-dn
+      ny_max=np.round(float(ny)/2.0)+dn
+
+      lon,colat=np.meshgrid(self.m[n].lon[ny_min:ny_max],90.0-self.m[n].lat[nx_min:nx_max],dtype=float)
+      colat=np.pi*colat/180.0
+      lon=np.pi*lon/180.0
+
+      #- Volume element.
+      dy=r*np.pi*np.sin(colat)*(self.m[n].lon[1]-self.m[n].lon[0])/180.0
+      dV=dx*dy
+      
+      #- Unit vector field.
+      x=np.cos(lon)*np.sin(colat)
+      y=np.sin(lon)*np.sin(colat)
+      z=np.cos(colat)
+
+      #- Make a Gaussian centred in the middle of the grid. ---------------
+      i=np.round(float(nx)/2.0)-1
+      j=np.round(float(ny)/2.0)-1
+
+      colat_i=np.pi*(90.0-self.m[n].lat[i])/180.0
+      lon_j=np.pi*self.m[n].lon[j]/180.0
+
+      x_i=np.cos(lon_j)*np.sin(colat_i)
+      y_j=np.sin(lon_j)*np.sin(colat_i)
+      z_k=np.cos(colat_i)
+
+      #- Compute the Gaussian.
+      G=x*x_i+y*y_j+z*z_k
+      G=G/np.max(np.abs(G))
+      G=r*np.arccos(G)
+      G=np.exp(-0.5*G**2/sigma**2)/(2.0*np.pi*sigma**2)
+
+      #plt.pcolor(lon,colat,G)
+      #plt.colorbar()
+      #plt.show()
+
+      #- Move the Gaussian across the field. ------------------------------
+      
+      v_filtered=self.m[n].v
+
+      for i in np.arange(dn+1,nx-dn-1):
+        for j in np.arange(dn+1,ny-dn-1):
+          for k in np.arange(nz):
+
+            v_filtered[i,j,k]=np.sum(self.m[n].v[i-dn:i+dn,j-dn:j+dn,k]*G*dV)
+
+      self.m[n].v=v_filtered
+
+
+  #########################################################################
+  #- Compute relaxed velocities from velocities at 1 s reference period.
   #########################################################################
 
   def ref2relax(self, qmodel='cem', nrelax=3):
@@ -347,42 +467,6 @@ class ses3d_model(object):
 
         self.m[k].v[:,:,idz]=conversion_factor*self.m[k].v[:,:,idz]
     
-
-  #########################################################################
-  #- CUt Depth LEvel
-  #########################################################################
-
-  def cudle(self,r_min,r_max,verbose=False):
-    """ cut out a certain radius range, mostly in order to produce smaller models for vtk
-
-    new_model=cudle(self,depth_min,depth_max)
-    """
-
-    m_new=ses3d_model()
-
-    #- march through subvolumes
-
-    for n in np.arange(self.nsubvol):
-
-      if (np.min(self.m[n].r)<=r_min) & (np.max(self.m[n].r)>=r_max):
-
-	if verbose==True:
-	  print 'subvolume '+str(n)+': r_min='+str(np.min(self.m[n].r))+' km, r_max='+str(np.max(self.m[n].r))+' km\n'
-
-	subvol=ses3d_submodel()
-	subvol.lat=self.m[n].lat
-	subvol.lon=self.m[n].lon
-
-	idr=(self.m[n].r>=r_min) & (self.m[n].r<=r_max)
-	subvol.r=self.m[n].r[idr]
-
-	idr=idr[1:(len(idr))]
-	subvol.v=self.m[n].v[:,:,idr]
-
-	m_new.m.append(subvol)
-	m_new.nsubvol=m_new.nsubvol+1
-
-    return m_new
 
   #########################################################################
   #- convert to vtk format
@@ -537,19 +621,20 @@ class ses3d_model(object):
   #- plot horizontal slices
   #########################################################################
 
-  def plot_slice(self,depth,min_val_plot,max_val_plot,colormap='tomo',verbose=False):
+  def plot_slice(self,depth,colormap='tomo',res='i',verbose=False):
     """ plot horizontal slices through an ses3d model
 
-    plot_slice(depth,min_val_plot,max_val_plot,verbose=False):
+    plot_slice(self,depth,colormap='tomo',res='i',verbose=False)
 
     depth=depth in km of the slice
-    min_val_plot, max_val_plot=minimum and maximum values of the colour scale
     colormap='tomo','mono'
+    res=resolution of the map, admissible values are: c, l, i, h f
+
     """
 
     radius=6371.0-depth
 
-    #- set up a map and colourmap
+    #- set up a map and colourmap -----------------------------------------
 
     if self.global_regional=='regional':
       m=Basemap(projection='merc',llcrnrlat=self.lat_min,urcrnrlat=self.lat_max,llcrnrlon=self.lon_min,urcrnrlon=self.lon_max,lat_ts=20,resolution=res)
@@ -570,54 +655,75 @@ class ses3d_model(object):
     elif colormap=='mono':
       my_colormap=cm.make_colormap({0.0:[1.0,1.0,1.0], 0.15:[1.0,1.0,1.0], 0.85:[0.0,0.0,0.0], 1.0:[0.0,0.0,0.0]})
 
-    #- loop over subvolumes
+    #- loop over subvolumes to collect information ------------------------
+
+    x_list=[]
+    y_list=[]
+    idz_list=[]
+    N_list=[]
 
     for k in np.arange(self.nsubvol):
 
       r=self.m[k].r
 
-      #- check if subvolume has values at target depth
+      #- collect subvolumes within target depth
 
       if (max(r)>=radius) & (min(r)<radius):
         
+        N_list.append(k)
+
         r=r[0:len(r)-1]
         idz=min(np.where(min(np.abs(r-radius))==np.abs(r-radius))[0])
         if idz==len(r): idz-=idz
+        idz_list.append(idz)
 
         if verbose==True:
           print 'true plotting depth: '+str(6371.0-r[idz])+' km'
 
-        nx=len(self.m[k].lat)
-        ny=len(self.m[k].lon)
-        nz=len(self.m[k].r)
+        x,y=m(self.m[k].lon_rot,self.m[k].lat_rot)
+        x_list.append(x)
+        y_list.append(y)
 
-        lon,lat=np.meshgrid(self.m[k].lon[0:ny],self.m[k].lat[0:nx])
+    #- make a (hopefully) intelligent colour scale ------------------------
 
-        #- rotate coordinate system if necessary
+    if len(N_list)>0:
 
-        if self.phi!=0.0:
+      #- compute some diagnostics
 
-          lat_rot=np.zeros(np.shape(lon),dtype=float)
-          lon_rot=np.zeros(np.shape(lat),dtype=float)
+      min_list=[]
+      max_list=[]
+      percentile_list=[]
+      
+      for k in np.arange(len(N_list)):
 
-          for idx in np.arange(nx):
-            for idy in np.arange(ny):
+        min_list.append(np.min(self.m[N_list[k]].v[:,:,idz_list[k]]))
+        max_list.append(np.max(self.m[N_list[k]].v[:,:,idz_list[k]]))
+        percentile_list.append(np.percentile(np.abs(self.m[N_list[k]].v[:,:,idz_list[k]]),99.0))
 
-              colat=90.0-lat[idx,idy]
-              lat_rot[idx,idy],lon_rot[idx,idy]=rot.rotate_coordinates(self.n,-self.phi,colat,lon[idx,idy])
-              lat_rot[idx,idy]=90.0-lat_rot[idx,idy]
+      minval=np.min(min_list)
+      maxval=np.max(max_list)
+      percent=np.max(percentile_list)
 
-          lon=lon_rot
-          lat=lat_rot
+      #- min and max roughly centred around zero
 
-        #- convert to map coordinates and plot
+      if ((-minval>0.2*maxval) and (-minval<5.0*maxval)):
+        max_val_plot=percent
+        min_val_plot=-max_val_plot
 
-        x,y=m(lon,lat)
-        im=m.pcolor(x,y,self.m[k].v[:,:,idz],cmap=my_colormap,vmin=min_val_plot,vmax=max_val_plot)
+      #- min and max not centred around zero
 
-        m.colorbar(im,"right", size="3%", pad='2%')
-        plt.title(str(depth)+' km')
-        plt.show()
+      else:
+        max_val_plot=0.9*maxval
+        min_val_plot=1.1*minval
+
+    #- loop over subvolumes to plot ---------------------------------------
+
+    for k in np.arange(len(N_list)):
+      im=m.pcolor(x_list[k],y_list[k],self.m[N_list[k]].v[:,:,idz_list[k]],cmap=my_colormap,vmin=min_val_plot,vmax=max_val_plot)
+
+      m.colorbar(im,"right", size="3%", pad='2%')
+      plt.title(str(depth)+' km')
+      plt.show()
 
   #########################################################################
   #- plot depth to a certain threshold value
