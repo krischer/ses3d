@@ -268,7 +268,7 @@ include 'mpif.h'
 
 	integer :: mi_rec, mi_src
 	integer ::num
-        integer :: status(MPI_STATUS_SIZE)
+  	integer :: status(MPI_STATUS_SIZE)
 
 !        real, dimension(0:2,0:(ny+1)*lpd,0:(nz+1)*lpd) :: Bx
 !        real, dimension(0:2,0:(nx+1)*lpd,0:(nz+1)*lpd) :: By
@@ -393,7 +393,16 @@ implicit none
 	! determine collocation points (knots)
 	!======================================================================
 
-	if (n==2) then
+	if (n==0) then
+		
+		knots(0)=0.0
+
+	elseif (n==1) then
+		
+		knots(0)=-1.0
+		knots(1)=1.0
+
+	elseif (n==2) then
 
 		knots(0)=-1.0
 		knots(1)=0.0
@@ -450,15 +459,23 @@ implicit none
 	! compute value of the LAGRANGE polynomial
 	!======================================================================
 
-	do k=0,n
+	if (n>0) then
 
-		if (k /= i) then
+		do k=0,n
 
-			lgll=lgll*(x-knots(k))/(knots(i)-knots(k))
+			if (k /= i) then
 
-		endif
+				lgll=lgll*(x-knots(k))/(knots(i)-knots(k))
 
-	enddo
+			endif
+
+		enddo
+		
+	elseif (n==0) then
+			
+		lgll=1.0
+		
+	endif
 
 
 end function lgll
@@ -489,7 +506,16 @@ implicit none
 	! determine collocation points (knots)
 	!======================================================================
 
-	if (n==2) then
+	if (n==0) then
+		
+		knots(0)=0.0
+
+	elseif (n==1) then
+		
+		knots(0)=-1.0
+		knots(1)=1.0
+
+	elseif (n==2) then
 
 		knots(0)=-1.0
 		knots(1)=0.0
@@ -546,34 +572,42 @@ implicit none
 	! compute derivative of LAGRANGE polynomial i at collocation point j
 	!======================================================================
 
-	if (i==j) then
+	if (n>0) then
 
+		if (i==j) then
+
+			y=0.0
+
+			do k=0,n
+
+				if (k /= i) then
+
+					y=y+1.0/(knots(i)-knots(k))
+
+				endif
+
+			enddo
+
+		else
+
+			y=1.0/(knots(i)-knots(j))
+
+			do k=0,n
+
+				if ((k /= i) .and. (k /= j)) then
+
+					y=y*(knots(j)-knots(k))/(knots(i)-knots(k))
+
+				endif
+
+			enddo
+
+		endif
+		
+	elseif (n==0) then
+		
 		y=0.0
-
-		do k=0,n
-
-			if (k /= i) then
-
-				y=y+1.0/(knots(i)-knots(k))
-
-			endif
-
-		enddo
-
-	else
-
-		y=1.0/(knots(i)-knots(j))
-
-		do k=0,n
-
-			if ((k /= i) .and. (k /= j)) then
-
-				y=y*(knots(j)-knots(k))/(knots(i)-knots(k))
-
-			endif
-
-		enddo
-
+		
 	endif
 
 end subroutine dlgll

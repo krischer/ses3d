@@ -204,7 +204,16 @@ include 'mpif.h'
 	! determine collocation points (knots)
 	!======================================================================
 
-	if (lpd==2) then
+	if (lpd==0) then
+		
+		knots(0)=0.0
+
+	elseif (lpd==1) then
+		
+		knots(0)=-1.0
+		knots(1)=1.0
+
+	elseif (lpd==2) then
 
 		knots(0)=-1.0
 		knots(1)=0.0

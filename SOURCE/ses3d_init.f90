@@ -88,7 +88,21 @@ include 'mpif.h'
 	! determine collocation points (knots) and integration weights
 	!======================================================================
 
-	if (lpd==2) then
+	if (lpd==0) then
+		
+		knots(0)=0.0
+		
+		w(0)=2.0
+
+	elseif (lpd==1) then
+		
+		knots(0)=-1.0
+		knots(1)=1.0
+		
+		w(0)=1.0
+		w(1)=1.0
+
+	elseif (lpd==2) then
 
 		knots(0)=-1.0
 		knots(1)=0.0
@@ -211,14 +225,12 @@ include 'mpif.h'
       	sin_theta(i,:,:,n,:,:)=sin(x(i,n))
       	cot_theta(i,:,:,n,:,:)=cos(x(i,n))/sin(x(i,n))
       	cos_theta(i,:,:,n,:,:)=cos(x(i,n))
-		!write(101,*) x(i,n)
 	enddo
 	enddo
 
 	do j=0,ny
 	do n=0,lpd
 		y(j,n)=ymin+j*dy+0.5*(1+knots(n))*dy
-		!write(102,*) y(j,n)
 	enddo
 	enddo
 
@@ -226,7 +238,6 @@ include 'mpif.h'
 	do n=0,lpd
 		z(k,n)=zmax-k*dz-0.5*(1+knots(n))*dz
     	r(:,:,k,:,:,n)=z(k,n)
-		!write(103,*) z(k,n)
 	enddo
 	enddo
 	

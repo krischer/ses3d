@@ -39,7 +39,17 @@ include 'mpif.h'
            ! determine collocation points (knots) and integration weights
            !======================================================================
 
-           if (deg==2) then
+		   if (deg==0) then
+			   
+			   cknots(0)=0.0
+
+		   elseif (deg==1) then
+			   
+			   cknots(0)=-1.0
+			   cknots(1)=1.0
+			   
+
+           elseif (deg==2) then
 
 			   cknots(0)=-1.0
 			   cknots(1)=0.0
@@ -473,8 +483,8 @@ include 'mpif.h'
 				dummy=lgll(lpd,i,recloc_std(1,idx))*lgll(lpd,j,recloc_std(2,idx))*lgll(lpd,k,recloc_std(3,idx))
 
 				seismogram_x(idx,it)=seismogram_x(idx,it)+vx(rx(idx),ry(idx),rz(idx),i,j,k)*dummy
-	                       	seismogram_y(idx,it)=seismogram_y(idx,it)+vy(rx(idx),ry(idx),rz(idx),i,j,k)*dummy
-	                       	seismogram_z(idx,it)=seismogram_z(idx,it)+vz(rx(idx),ry(idx),rz(idx),i,j,k)*dummy
+				seismogram_y(idx,it)=seismogram_y(idx,it)+vy(rx(idx),ry(idx),rz(idx),i,j,k)*dummy
+				seismogram_z(idx,it)=seismogram_z(idx,it)+vz(rx(idx),ry(idx),rz(idx),i,j,k)*dummy
 
 			enddo
 			enddo
