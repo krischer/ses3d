@@ -88,6 +88,8 @@ class ses3d_model(object):
     res.n=self.n
 
     res.global_regional=self.global_regional
+    res.d_lon=self.d_lon
+    res.d_lat=self.d_lat
 
     for k in np.arange(self.nsubvol):
 
@@ -127,6 +129,8 @@ class ses3d_model(object):
     res.phi=self.phi
     res.n=self.n
     res.global_regional=self.global_regional
+    res.d_lon=self.d_lon
+    res.d_lat=self.d_lat
 
     for k in np.arange(self.nsubvol):
 
@@ -139,7 +143,7 @@ class ses3d_model(object):
       subvol.lat_rot=self.m[k].lat_rot
       subvol.lon_rot=self.m[k].lon_rot
       
-      subvol.v=factor*self.m[k].v
+      subvol.v=self.m[k].v+other_model.m[k].v
 
       res.m.append(subvol)
 
@@ -375,10 +379,6 @@ class ses3d_model(object):
       G=r*np.arccos(G)
       G=np.exp(-0.5*G**2/sigma**2)/(2.0*np.pi*sigma**2)
 
-      #plt.pcolor(lon,colat,G)
-      #plt.colorbar()
-      #plt.show()
-
       #- Move the Gaussian across the field. ------------------------------
       
       v_filtered=self.m[n].v
@@ -391,6 +391,91 @@ class ses3d_model(object):
 
       self.m[n].v=v_filtered
 
+
+  #########################################################################
+  #- Apply horizontal smoothing with adaptive smoothing length.
+  #########################################################################
+
+  def smooth_horizontal_adaptive(self,sigma):
+    
+    #- Find maximum smoothing length. -------------------------------------
+
+    sigma_max=[]
+
+    for n in np.arange(self.nsubvol):
+
+      sigma_max.append(np.max(sigma.m[n].v))
+
+    #- Loop over subvolumes.-----------------------------------------------
+
+    for n in np.arange(self.nsubvol):
+
+      #- Size of the array.
+      nx=len(self.m[n].lat)-1
+      ny=len(self.m[n].lon)-1
+      nz=len(self.m[n].r)-1
+
+      #- Estimate element width.
+      r=np.mean(self.m[n].r)
+      dx=r*np.pi*(self.m[n].lat[0]-self.m[n].lat[1])/180.0
+      
+      #- Colat and lon fields for the small Gaussian.
+      dn=2*np.round(sigma_max[n]/dx)
+
+      nx_min=np.round(float(nx)/2.0)-dn
+      nx_max=np.round(float(nx)/2.0)+dn
+
+      ny_min=np.round(float(ny)/2.0)-dn
+      ny_max=np.round(float(ny)/2.0)+dn
+
+      lon,colat=np.meshgrid(self.m[n].lon[ny_min:ny_max],90.0-self.m[n].lat[nx_min:nx_max],dtype=float)
+      colat=np.pi*colat/180.0
+      lon=np.pi*lon/180.0
+
+      #- Volume element.
+      dy=r*np.pi*np.sin(colat)*(self.m[n].lon[1]-self.m[n].lon[0])/180.0
+      dV=dx*dy
+      
+      #- Unit vector field.
+      x=np.cos(lon)*np.sin(colat)
+      y=np.sin(lon)*np.sin(colat)
+      z=np.cos(colat)
+
+      #- Make a Gaussian centred in the middle of the grid. ---------------
+      i=np.round(float(nx)/2.0)-1
+      j=np.round(float(ny)/2.0)-1
+
+      colat_i=np.pi*(90.0-self.m[n].lat[i])/180.0
+      lon_j=np.pi*self.m[n].lon[j]/180.0
+
+      x_i=np.cos(lon_j)*np.sin(colat_i)
+      y_j=np.sin(lon_j)*np.sin(colat_i)
+      z_k=np.cos(colat_i)
+
+      #- Distance from the central point.
+      G=x*x_i+y*y_j+z*z_k
+      G=G/np.max(np.abs(G))
+      G=r*np.arccos(G)
+      
+      #- Move the Gaussian across the field. ------------------------------
+      
+      v_filtered=self.m[n].v
+
+      for i in np.arange(dn+1,nx-dn-1):
+        for j in np.arange(dn+1,ny-dn-1):
+          for k in np.arange(nz):
+
+            #- Compute the actual Gaussian.
+            s=sigma.m[n].v[i,j,k]
+
+            if (s>0):
+            
+              GG=np.exp(-0.5*G**2/s**2)/(2.0*np.pi*s**2)
+
+              #- Apply filter.
+              v_filtered[i,j,k]=np.sum(self.m[n].v[i-dn:i+dn,j-dn:j+dn,k]*GG*dV)
+
+      self.m[n].v=v_filtered
 
   #########################################################################
   #- Compute relaxed velocities from velocities at 1 s reference period.
@@ -706,15 +791,15 @@ class ses3d_model(object):
 
       #- min and max roughly centred around zero
 
-      if ((-minval>0.2*maxval) and (-minval<5.0*maxval)):
+      if (minval*maxval<0.0):
         max_val_plot=percent
         min_val_plot=-max_val_plot
 
       #- min and max not centred around zero
 
       else:
-        max_val_plot=0.9*maxval
-        min_val_plot=1.1*minval
+        max_val_plot=maxval
+        min_val_plot=minval
 
     #- loop over subvolumes to plot ---------------------------------------
 
