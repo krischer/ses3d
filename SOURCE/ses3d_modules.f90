@@ -197,6 +197,19 @@ implicit none
         real :: seismogram_y(1:maxnr,1:maxnt)
         real :: seismogram_z(1:maxnr,1:maxnt)
 
+# ifdef SAVE_TWELVE_COMPONENTS
+        real :: seismogram_rot_x(1:maxnr,1:maxnt)
+        real :: seismogram_rot_y(1:maxnr,1:maxnt)
+        real :: seismogram_rot_z(1:maxnr,1:maxnt)
+        real :: seismogram_strain_xx(1:maxnr,1:maxnt)
+        real :: seismogram_strain_yy(1:maxnr,1:maxnt)
+        real :: seismogram_strain_zz(1:maxnr,1:maxnt)
+        real :: seismogram_strain_xy(1:maxnr,1:maxnt)
+        real :: seismogram_strain_yz(1:maxnr,1:maxnt)
+        real :: seismogram_strain_xz(1:maxnr,1:maxnt)
+        real, dimension(0:nx_max,0:ny_max,0:nz_max,0:lpd,0:lpd,0:lpd) :: rot_x, rot_y, rot_z
+# endif
+
 	!======================================================================
 	! other variables
 	!======================================================================

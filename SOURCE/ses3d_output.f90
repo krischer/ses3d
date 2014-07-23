@@ -40,14 +40,14 @@ include 'mpif.h'
            !======================================================================
 
 		   if (deg==0) then
-			   
+
 			   cknots(0)=0.0
 
 		   elseif (deg==1) then
-			   
+
 			   cknots(0)=-1.0
 			   cknots(1)=1.0
-			   
+
 
            elseif (deg==2) then
 
@@ -136,7 +136,7 @@ include 'mpif.h'
         call int2str(my_rank,dummy)
 
         if (n==1) then
-			
+
 			fn=ffd(1:len_trim(ffd))//name(1:len_trim(name))//'_'//dummy(1:len_trim(dummy))
 
            	write(99,*) fn
@@ -210,7 +210,7 @@ include 'mpif.h'
  	!- read and check if interpolation is necessary
 
   	if (deg<lpd) then
-		
+
 		read(tag) cfield
         backspace(unit=tag)
 	   	if (idx<nt) then
@@ -278,7 +278,7 @@ include 'mpif.h'
 	!======================================================================
 
 	integer, intent(in) :: n
-   	integer :: i, j, k
+   	integer :: i, j, k, ii
 	character(len=10) :: dummy, ns
 	character(len=1000) :: fn
 	character(len=12) :: sname
@@ -439,7 +439,6 @@ include 'mpif.h'
 			write(51,*) seismogram_x(i,j)
 			write(52,*) seismogram_y(i,j)
 			write(53,*) seismogram_z(i,j)
-
 		enddo
 
 		close(unit=51)
@@ -447,6 +446,60 @@ include 'mpif.h'
 		close(unit=53)
 
 	enddo
+
+
+# ifdef SAVE_TWELVE_COMPONENTS
+	do i=1,nr
+
+		sname=station_name_local(i)
+
+		open(unit=54,file=ofd(1:len_trim(ofd))//sname//'.rot_x',action='write')
+		open(unit=55,file=ofd(1:len_trim(ofd))//sname//'.rot_y',action='write')
+		open(unit=56,file=ofd(1:len_trim(ofd))//sname//'.rot_z',action='write')
+		open(unit=57,file=ofd(1:len_trim(ofd))//sname//'.strain_xx',action='write')
+		open(unit=58,file=ofd(1:len_trim(ofd))//sname//'.strain_yy',action='write')
+		open(unit=59,file=ofd(1:len_trim(ofd))//sname//'.strain_zz',action='write')
+		open(unit=60,file=ofd(1:len_trim(ofd))//sname//'.strain_xy',action='write')
+		open(unit=61,file=ofd(1:len_trim(ofd))//sname//'.strain_xz',action='write')
+		open(unit=62,file=ofd(1:len_trim(ofd))//sname//'.strain_yz',action='write')
+
+		write(54,*) 'rotation rate: theta component seismograms'
+		write(55,*) 'rotation rate: phi component seismograms'
+		write(56,*) 'rotation rate: r component seismograms'
+		write(57,*) 'strain rate: theta theta component seismograms'
+		write(58,*) 'strain rate: phi phi component seismograms'
+		write(59,*) 'strain rate: r r component seismograms'
+		write(60,*) 'strain rate: theta phi component seismograms'
+		write(61,*) 'strain rate: theta r component seismograms'
+		write(62,*) 'strain rate: phi r component seismograms'
+
+        do ii = 54, 62, 1
+            write(ii,*) 'nt=', nt
+            write(ii,*) 'dt=', dt
+            write(ii,*) 'receiver location (colat [deg],lon [deg],depth [m])'
+		    write(ii,*) 'x=', recloc(1,i)*180/pi, 'y=', recloc(2,i)*180/pi, 'z=', recloc(3,i)
+            write(ii,*) 'source location (colat [deg],lon [deg],depth [m])'
+            write(ii,*) 'x=', xxs*180/pi, 'y=', yys*180/pi, 'z=', zzs
+        enddo
+
+		do j=1,nt
+			write(54,*) seismogram_rot_x(i,j)
+			write(55,*) seismogram_rot_y(i,j)
+			write(56,*) seismogram_rot_z(i,j)
+			write(57,*) seismogram_strain_xx(i,j)
+			write(58,*) seismogram_strain_yy(i,j)
+			write(59,*) seismogram_strain_zz(i,j)
+			write(60,*) seismogram_strain_xy(i,j)
+			write(61,*) seismogram_strain_xz(i,j)
+			write(62,*) seismogram_strain_yz(i,j)
+		enddo
+
+        do ii = 54, 62, 1
+            close(unit=ii)
+        enddo
+
+	enddo
+# endif
 
 	endif
 
@@ -485,6 +538,18 @@ include 'mpif.h'
 				seismogram_x(idx,it)=seismogram_x(idx,it)+vx(rx(idx),ry(idx),rz(idx),i,j,k)*dummy
 				seismogram_y(idx,it)=seismogram_y(idx,it)+vy(rx(idx),ry(idx),rz(idx),i,j,k)*dummy
 				seismogram_z(idx,it)=seismogram_z(idx,it)+vz(rx(idx),ry(idx),rz(idx),i,j,k)*dummy
+
+# ifdef SAVE_TWELVE_COMPONENTS
+				seismogram_rot_x(idx,it)=seismogram_rot_x(idx,it)+rot_x(rx(idx),ry(idx),rz(idx),i,j,k)*dummy
+				seismogram_rot_y(idx,it)=seismogram_rot_y(idx,it)+rot_x(rx(idx),ry(idx),rz(idx),i,j,k)*dummy
+				seismogram_rot_z(idx,it)=seismogram_rot_z(idx,it)+rot_x(rx(idx),ry(idx),rz(idx),i,j,k)*dummy
+				seismogram_strain_xx(idx,it)=seismogram_strain_xx(idx,it)+exx(rx(idx),ry(idx),rz(idx),i,j,k)*dummy
+				seismogram_strain_yy(idx,it)=seismogram_strain_yy(idx,it)+eyy(rx(idx),ry(idx),rz(idx),i,j,k)*dummy
+				seismogram_strain_zz(idx,it)=seismogram_strain_zz(idx,it)+ezz(rx(idx),ry(idx),rz(idx),i,j,k)*dummy
+				seismogram_strain_xy(idx,it)=seismogram_strain_xy(idx,it)+exy(rx(idx),ry(idx),rz(idx),i,j,k)*dummy
+				seismogram_strain_xz(idx,it)=seismogram_strain_xz(idx,it)+exz(rx(idx),ry(idx),rz(idx),i,j,k)*dummy
+				seismogram_strain_yz(idx,it)=seismogram_strain_yz(idx,it)+eyz(rx(idx),ry(idx),rz(idx),i,j,k)*dummy
+# endif
 
 			enddo
 			enddo

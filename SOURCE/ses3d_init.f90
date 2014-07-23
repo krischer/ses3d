@@ -54,7 +54,7 @@ include 'mpif.h'
 	end where
 
   	if (is_diss==1) then
-		
+
 		mu_tau=(1+sum_D_p*tau)*mu
         Mxx=0.0; Myy=0.0; Mzz=0.0; Mxy=0.0; Mxz=0.0; Myz=0.0
 
@@ -82,23 +82,23 @@ include 'mpif.h'
 	src_xz=0.0; src_zx=0.0; src_yz=0.0; src_zy=0.0
 
 	grad_rho=0.0; 	grad_cp=0.0; 	grad_csh=0.0; 	grad_csv=0.0
-	grad_Q_mu=0.0;	grad_Q_kappa=0.0;  grad_alpha_mu=0.0;  grad_alpha_kappa=0.0 
+	grad_Q_mu=0.0;	grad_Q_kappa=0.0;  grad_alpha_mu=0.0;  grad_alpha_kappa=0.0
 
 	!======================================================================
 	! determine collocation points (knots) and integration weights
 	!======================================================================
 
 	if (lpd==0) then
-		
+
 		knots(0)=0.0
-		
+
 		w(0)=2.0
 
 	elseif (lpd==1) then
-		
+
 		knots(0)=-1.0
 		knots(1)=1.0
-		
+
 		w(0)=1.0
 		w(1)=1.0
 
@@ -240,7 +240,7 @@ include 'mpif.h'
     	r(:,:,k,:,:,n)=z(k,n)
 	enddo
 	enddo
-	
+
 	!======================================================================
 	! initialisation of the JACOBIAN
 	!======================================================================
@@ -283,7 +283,7 @@ include 'mpif.h'
   	!=======================================================================
 
 	if ((adjoint_flag==0) .or. (adjoint_flag==1)) then
-		
+
 		nr=0			! number of receivers in this processor box
 
         write(99,*) 'receiver locations in transformed unit system --------------'
@@ -353,6 +353,18 @@ include 'mpif.h'
         seismogram_x(:,:)=0.0
         seismogram_y(:,:)=0.0
         seismogram_z(:,:)=0.0
+
+# ifdef SAVE_TWELVE_COMPONENTS
+        seismogram_rot_x(:,:)=0.0
+        seismogram_rot_y(:,:)=0.0
+        seismogram_rot_z(:,:)=0.0
+        seismogram_strain_xx(:,:)=0.0
+        seismogram_strain_yy(:,:)=0.0
+        seismogram_strain_zz(:,:)=0.0
+        seismogram_strain_xy(:,:)=0.0
+        seismogram_strain_yz(:,:)=0.0
+        seismogram_strain_xz(:,:)=0.0
+# endif
 
 	endif
 
@@ -486,7 +498,7 @@ include 'mpif.h'
 				do i=1,nt
 
 		  			read(10,*) ad_stf_x(nr_adsrc,i), ad_stf_y(nr_adsrc,i), ad_stf_z(nr_adsrc,i)
-			
+
 				enddo
 
 				close(unit=10)
@@ -513,7 +525,7 @@ include 'mpif.h'
 
 	    do i=0,nx
 		do k=0,lpd
-			
+
 			if (abs(ad_srcloc(1,idx)-x(i,k))<delta_x) then
 
 				is(1,idx)=i
@@ -533,7 +545,7 @@ include 'mpif.h'
 
 	    do i=0,ny
 		do k=0,lpd
-			
+
 			if (abs(ad_srcloc(2,idx)-y(i,k))<delta_y) then
 
 				is(2,idx)=i
@@ -583,96 +595,96 @@ include 'mpif.h'
 
     !- upper z-boundary ---------------------------------------------------
 
-	if (1==0) then	
+	if (1==0) then
 	if (iz_multi==pz) then
-		
+
 		do k=0,pml-1
         do n=0,lpd
-			
+
 			delta_z=(zmax-pml*dz-z(k,n))/(pml*dz)
             prof_z(0:nx,0:ny,k,0:lpd,0:lpd,n)=alpha*delta_z*delta_z
-			
+
 		enddo
         enddo
-	
+
 	endif
 	endif
 
  	!- lower z-boundary ---------------------------------------------------
 
  	if (iz_multi==1) then
-		
+
 		do k=(nz-pml+1),nz
         do n=0,lpd
-			
+
 			delta_z=(zmin+pml*dz-z(k,n))/(pml*dz)
             prof_z(0:nx,0:ny,k,0:lpd,0:lpd,n)=alpha*delta_z*delta_z
-			
+
 		enddo
         enddo
-	
+
 	endif
 
 	!- left x-boundary ----------------------------------------------------
-	
+
 	if (ix_multi==1) then
-	
+
 		do i=0,pml-1
         do n=0,lpd
-			
+
 			delta_x=(xmin+pml*dx-x(i,n))/(pml*dx)
 			prof_x(i,0:ny,0:nz,n,0:lpd,0:lpd)=alpha*delta_x*delta_x
-			
+
 		enddo
 		enddo
 
 	endif
-	
+
 	!- right x-boundary ---------------------------------------------------
-	
+
 	if (ix_multi==px) then
-		
+
 		do i=(nx-pml+1),nx
         do n=0,lpd
 
         	delta_x=(xmax-dx*pml-x(i,n))/(pml*dx)
             prof_x(i,0:ny,0:nz,n,0:lpd,0:lpd)=alpha*delta_x*delta_x
-			
+
 		enddo
 		enddo
-	
+
 	endif
-	
+
 	!- left y-boundary ----------------------------------------------------
-	
+
 	if (iy_multi==1) then
-		
+
 		do i=0,pml-1
         do n=0,lpd
-			
+
 			delta_y=(ymin+pml*dy-y(i,n))/(pml*dy)
             prof_y(0:nx,i,0:nz,0:lpd,n,0:lpd)=alpha*delta_y*delta_y
-			
+
 		enddo
         enddo
-	
+
 	endif
-	
+
 	!- right y-boundary ---------------------------------------------------
-	
+
 	if (iy_multi==py) then
-		
+
 		do i=(ny-pml+1),ny
 		do n=0,lpd
 
 			delta_y=(ymax-dy*pml-y(i,n))/(pml*dy)
 			prof_y(0:nx,i,0:nz,0:lpd,n,0:lpd)=alpha*delta_y*delta_y
-			
+
 		enddo
 		enddo
-	
+
 	endif
-	
+
 	!- normalise the corners ----------------------------------------------
 
     prof=prof_x+prof_y+prof_z
