@@ -91,9 +91,9 @@ include 'mpif.h'
     !-------------------------------------------------------------------------------------------------
 
 # ifdef SAVE_TWELVE_COMPONENTS
-    rot_x=(-vy/r+eyz/(r_sin_theta)+ezy)*0.5
-    rot_y=(-ezx+(vx-exz)/r)*0.5
-    rot_z=((exy+vy*cot_theta-eyx/sin_theta)/r)*0.5
+    rot_x = (-vy / r + eyz / (r_sin_theta) + ezy) * 0.5
+    rot_y = (-ezx + (vx - exz) / r) * 0.5
+    rot_z = ((exy + vy * cot_theta - eyx / sin_theta) / r) * 0.5
 # endif
 
 	!-------------------------------------------------------------------------------------------------

@@ -541,8 +541,8 @@ include 'mpif.h'
 
 # ifdef SAVE_TWELVE_COMPONENTS
 				seismogram_rot_x(idx,it)=seismogram_rot_x(idx,it)+rot_x(rx(idx),ry(idx),rz(idx),i,j,k)*dummy
-				seismogram_rot_y(idx,it)=seismogram_rot_y(idx,it)+rot_x(rx(idx),ry(idx),rz(idx),i,j,k)*dummy
-				seismogram_rot_z(idx,it)=seismogram_rot_z(idx,it)+rot_x(rx(idx),ry(idx),rz(idx),i,j,k)*dummy
+				seismogram_rot_y(idx,it)=seismogram_rot_y(idx,it)+rot_y(rx(idx),ry(idx),rz(idx),i,j,k)*dummy
+				seismogram_rot_z(idx,it)=seismogram_rot_z(idx,it)+rot_z(rx(idx),ry(idx),rz(idx),i,j,k)*dummy
 				seismogram_strain_xx(idx,it)=seismogram_strain_xx(idx,it)+exx(rx(idx),ry(idx),rz(idx),i,j,k)*dummy
 				seismogram_strain_yy(idx,it)=seismogram_strain_yy(idx,it)+eyy(rx(idx),ry(idx),rz(idx),i,j,k)*dummy
 				seismogram_strain_zz(idx,it)=seismogram_strain_zz(idx,it)+ezz(rx(idx),ry(idx),rz(idx),i,j,k)*dummy
